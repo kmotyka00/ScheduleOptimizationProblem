@@ -36,7 +36,7 @@ class Instructor:
     def __init__(self, id, qualifications: List[LessonType] = None):
         self.id = id
         if qualifications is None:
-            self.selected_training = np.array(list())
+            self.qualifications = np.array(list())
         else:
             self.qualifications = np.array(qualifications)
 
