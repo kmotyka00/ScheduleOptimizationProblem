@@ -56,7 +56,9 @@ class Lesson:
 
 class Schedule:
     def __init__(self, client_file: str = 'form_answers.csv', instructor_file: str = 'instructors_info.csv',
-                 class_num=1, day_num=6, time_slot_num=6, max_clients_per_training=5):
+                 class_num=1, day_num=6, time_slot_num=6, max_clients_per_training=5,
+                 ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=200):
+
         self.class_id = np.arange(class_num)
         self.day = np.arange(day_num)  # monday - saturday
         self.time_slot = np.arange(time_slot_num)
@@ -73,12 +75,18 @@ class Schedule:
         df = pd.read_csv(instructor_file, sep=";")
         for index, instructor in df.iterrows():
             self.instructors.append(Instructor(instructor['Instructor_ID'],
-                                        [LessonType(int(elem)) for elem in instructor['Lesson_Types'].split(sep=" ")]))
+                                               [LessonType(int(elem)) for elem in
+                                                instructor['Lesson_Types'].split(sep=" ")]))
         self.instructors = np.array(self.instructors)
         self.schedule = np.array([None for x in
                                   range(self.class_id.shape[0] * self.day.shape[0] * self.time_slot.shape[0])])
         self.schedule = self.schedule.reshape((self.class_id.shape[0], self.day.shape[0], self.time_slot.shape[0]))
 
+        # economy
+        self.ticket_cost = ticket_cost
+        self.hour_pay = hour_pay
+        self.pay_for_presence = pay_for_presence
+        self.class_renting_cost = class_renting_cost
 
     def generate_random_schedule(self):
         # picked = [lesson_type for client in self.clients for lesson_type in client.selected_training]
@@ -94,8 +102,8 @@ class Schedule:
             num_of_trainings = int(np.ceil(len(all_participants) / self.max_clients_per_training))
             for training in range(num_of_trainings):
                 instructor = self.instructors[i % self.instructors.shape[0]]
-                participants = all_participants[training*self.max_clients_per_training:
-                                                training*self.max_clients_per_training+self.max_clients_per_training]
+                participants = all_participants[training * self.max_clients_per_training:
+                                                training * self.max_clients_per_training + self.max_clients_per_training]
                 self.schedule[i] = Lesson(instructor, lesson_type, participants)
                 i += 1
         self.schedule = self.schedule.reshape((self.class_id.shape[0], self.day.shape[0], self.time_slot.shape[0]))
@@ -107,7 +115,7 @@ class Schedule:
         # odjąć koszt przyjścia trenera w danym dniu
         # i odjąć koszt wynajęcia sali w danym dniu
         participants_sum = 0
-        instructors_per_day = np.zeros(shape=(self.instructors.shape[0], self.day.shape[0]))
+        instructors_hours = np.zeros(shape=(self.instructors.shape[0], self.day.shape[0]))
         class_per_day = np.zeros(shape=(self.class_id.shape[0], self.day.shape[0]))
 
         for c in range(self.schedule.shape[0]):
@@ -115,10 +123,13 @@ class Schedule:
                 for ts in range(self.schedule.shape[2]):
                     if self.schedule[c, d, ts] is not None:
                         participants_sum += self.schedule[c, d, ts].participants.shape[0]
-                        instructors_per_day[self.schedule[c, d, ts].instructor.id, d] = 1
+                        instructors_hours[self.schedule[c, d, ts].instructor.id, d] += 1
                         class_per_day[c, d] = 1
 
-        return 20 * participants_sum - 50 * instructors_per_day.sum() - 200 * class_per_day.sum()
+        return self.ticket_cost * participants_sum - \
+               self.hour_pay * instructors_hours.sum() - \
+               self.pay_for_presence * (instructors_hours > 0).sum() - \
+               self.class_renting_cost * class_per_day.sum()
 
     def __str__(self):
         return str(self.schedule)
@@ -128,4 +139,3 @@ SM = Schedule()
 SM.generate_random_schedule()
 print(SM.goal_function())
 print("Essa")
-
