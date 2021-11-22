@@ -242,7 +242,7 @@ class Schedule:
 
                 changed = True
                 trainings2 = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
-                print(trainings2)
+
                 while changed:
                     changed = False
 
@@ -267,35 +267,30 @@ class Schedule:
                                 break
 
 
-
-
-
-
-
 SM = Schedule(max_clients_per_training=5)
-
 SM.generate_random_schedule(greedy=False)
-print("INITIAL SCHEDULE")
+
+print("\nINITIAL SCHEDULE")
 print(SM)
 print('Initial cost: ', SM.get_cost())
+
+tic = time.time()
+best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
+                                                epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True)
+toc = time.time()
+
+print("\nAFTER OPTIMIZATION")
+print(SM)
+print("Number of iterations: ", num_of_iter)
+print("Best cost", best_cost)
+print("Time: ", toc-tic)
 
 SM.improve_results()
-print("Improved SCHEDULE")
+print("\nIMPROVED SCHEDULE")
 print(SM)
-print('Initial cost: ', SM.get_cost())
+print('Best improved cost: ', SM.get_cost())
 
-# tic = time.time()
-# best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
-#                                                 epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True)
-# toc = time.time()
-#
-#
-# print("AFTER OPTIMIZATION")
-# print(SM)
-# print("Number of iterations: ", num_of_iter)
-# print("Best cost", best_cost)
-# print("Time: ", toc-tic)
-# print("\nEssa")
+print("\nEssa")
 
 #  TODO: - poprawienie rozwiązania podczas działania algorytmu SA (przenoszenie względem prowadzących)
 #  TODO: - dodanie listy kompetencji i mniej losowe przydzielanie prowadzących do zajęć (może jako prawdopodobieństwo)
