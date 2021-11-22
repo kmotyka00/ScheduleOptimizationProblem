@@ -161,8 +161,8 @@ class Schedule:
         current_solution[random_not_none_id] = None
         return current_solution
 
-    def simulated_annealing(self, alpha=0.999, initial_temp=1000, n_iter_one_temp=5, min_temp=0.1, epsilon=0.1,
-                            n_iter_without_improvement=1000, initial_solution=False):
+    def simulated_annealing(self, alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
+                            epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True):
 
         if not initial_solution:
             self.generate_random_schedule()  # self.schedule initialized
@@ -209,7 +209,8 @@ class Schedule:
     def __str__(self):
 
         result = str()
-        days = ["-- MONDAY --", "-- TUESDAY --", "-- WEDNESDAY --", "-- THURSDAY --", "-- FRIDAY --", "-- SATURDAY --"]
+        days = ["----- MONDAY -----", "----- TUESDAY -----", "----- WEDNESDAY -----", "----- THURSDAY -----",
+                "----- FRIDAY -----", "----- SATURDAY -----"]
         hour = ["16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00"]
         for c in range(self.schedule.shape[0]):
             for d in range(self.schedule.shape[1]):
@@ -236,7 +237,7 @@ class Schedule:
                         free_ts = list()
                         for ts in range(self.schedule.shape[2]):
                             if self.schedule[c, d, ts] != None:
-                                if self.schedule[c, d, ts].instructor == instructor:
+                                if self.schedule[c, d, ts].instructor.id == instructor.id:
                                     timeslots.append(ts)
                             else:
                                 free_ts.append(ts)
@@ -306,7 +307,7 @@ SM.generate_random_schedule(greedy=False)
 
 print("\nINITIAL SCHEDULE")
 print(SM)
-print('Initial cost: ', SM.get_cost())
+print('Initial earnings: ', SM.get_cost())
 
 tic = time.time()
 best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
@@ -316,14 +317,15 @@ toc = time.time()
 print("\nAFTER OPTIMIZATION")
 print(SM)
 print("Number of iterations: ", num_of_iter)
-print("Best cost", best_cost)
+print("Best earnings: ", best_cost)
 print("Time: ", toc-tic)
 
 SM.improve_results()
 print("\nIMPROVED SCHEDULE")
 print(SM)
+print("Best improved earnings: ", SM.get_cost())
 
-
+#  TODO: - zwiększyć liczbę klas
 #  TODO: - poprawienie rozwiązania podczas działania algorytmu SA (przenoszenie względem prowadzących)
 #  TODO: - dodanie listy kompetencji i mniej losowe przydzielanie prowadzących do zajęć (może jako prawdopodobieństwo)
 #  TODO: - ograniczenia - chwiliowo pomijamy ograniczenie 6) i 7)
