@@ -57,7 +57,7 @@ class Lesson:
         lesson_type = str(self.lesson_type)
         lt = lesson_type.split(sep='.')
         lesson_type = lt[1]
-        return f"Instructor Id: {self.instructor.id}, Type: {lesson_type}"
+        return f"I: {self.instructor.id}, L: {lesson_type}"
 
 
 class Schedule:
@@ -225,45 +225,79 @@ class Schedule:
 
     def improve_results(self):
 
-        for instructor in self.instructors:
-            trainings = list()
-            for c in range(self.schedule.shape[0]):
-                for d in range(self.schedule.shape[1]):
-                    timeslots = list()
-                    free_ts = list()
-                    for ts in range(self.schedule.shape[2]):
-                        if self.schedule[c, d, ts] != None:
-                            if self.schedule[c, d, ts].instructor == instructor:
-                                timeslots.append(ts)
-                        else:
-                            free_ts.append(ts)
-                    if len(timeslots) > 0:
-                        trainings.append([d, timeslots, free_ts])
+        changed = True
+        while changed:
+            changed = False
+            for instructor in self.instructors:
+                trainings = list()
+                for c in range(self.schedule.shape[0]):
+                    for d in range(self.schedule.shape[1]):
+                        timeslots = list()
+                        free_ts = list()
+                        for ts in range(self.schedule.shape[2]):
+                            if self.schedule[c, d, ts] != None:
+                                if self.schedule[c, d, ts].instructor == instructor:
+                                    timeslots.append(ts)
+                            else:
+                                free_ts.append(ts)
+                        if len(timeslots) > 0:
+                            trainings.append([d, timeslots, free_ts])
 
-                changed = True
-                trainings2 = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
-                print(trainings2)
-                while changed:
-                    changed = False
-
+                    trainings2 = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
                     for i in range(len(trainings2) - 1):
                         for j in range(i+1, len(trainings2)):
-                            if len(trainings2[i][1]) < len(trainings2[j][2]):
+                            timeslots_taken = list()
+                            changed = False
+                            if len(trainings2[i][1]) <= len(trainings2[j][2]):
                                 for ts_iter in range(len(trainings2[i][1])):
                                     self.schedule[c, trainings2[j][0], trainings2[j][2][ts_iter]] = \
                                         self.schedule[c, trainings2[i][0], trainings2[i][1][ts_iter]]
 
                                     self.schedule[c, trainings2[i][0], trainings2[i][1][ts_iter]] = None
-                                    # update trainings
-                                    trainings2[j][1].append(trainings2[i][1][ts_iter])
-                                    trainings2[j][2].pop(ts_iter)
-
+                                    # dodaj do zajętych w j
+                                    trainings2[j][1].append(trainings2[j][2][ts_iter])
+                                    # dodaj do zwolnionych w i
                                     trainings2[i][2].append(trainings2[i][1][ts_iter])
+                                    # zapamiętaj do usunięcia z wolnych w j
+                                    timeslots_taken.append(trainings2[j][2][ts_iter])
 
+                                    # zmienna po to aby po wrzuceniu i do j nie sprawdzać dalszych j
                                     changed = True
 
-                            if changed:
+                                # usuń zapamiętane
+                                for ts_iter in timeslots_taken:
+                                    trainings2[j][2].remove(ts_iter)
+                                # wyczyść listę zajętych dla i
                                 trainings2[i][1] = []
+
+                            elif len(trainings2[i][2]) > len(trainings2[j][1]):
+                                for ts_iter in range(len(trainings2[j][1])):
+                                    self.schedule[c, trainings2[i][0], trainings2[i][2][ts_iter]] = \
+                                        self.schedule[c, trainings2[j][0], trainings2[j][1][ts_iter]]
+
+                                    self.schedule[c, trainings2[j][0], trainings2[j][1][ts_iter]] = None
+                                    # zmienna po to aby po wrzuceniu i do j nie sprawdzać dalszych j
+                                    changed = True
+                                    # dodaj do zajętych w i
+                                    trainings2[i][1].append(trainings2[i][2][ts_iter])
+                                    # dodaj do zwolnionych w j
+                                    trainings2[j][2].append(trainings2[j][1][ts_iter])
+                                    # zapamiętaj do usunięcia z wolnych w i
+                                    timeslots_taken.append(trainings2[i][2][ts_iter])
+
+                                    # zmienna po to aby po wrzuceniu j do i nie sprawdzać dalszych j
+                                    changed = True
+
+                                # usuń zapamiętane
+                                for ts_iter in timeslots_taken:
+                                    trainings2[i][2].remove(ts_iter)
+                                    # wyczyść listę zajętych dla i
+                                trainings2[j][1] = []
+
+                            if changed:
+                                # aby utrzymać właściwą kolejność
+                                trainings2 = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
+                                # przejdź do kolejnej iteracji dla i
                                 break
 
 
@@ -282,20 +316,25 @@ print('Initial cost: ', SM.get_cost())
 SM.improve_results()
 print("Improved SCHEDULE")
 print(SM)
-print('Initial cost: ', SM.get_cost())
+print('Improved cost: ', SM.get_cost())
 
-# tic = time.time()
-# best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
-#                                                 epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True)
-# toc = time.time()
-#
-#
-# print("AFTER OPTIMIZATION")
-# print(SM)
-# print("Number of iterations: ", num_of_iter)
-# print("Best cost", best_cost)
-# print("Time: ", toc-tic)
-# print("\nEssa")
+tic = time.time()
+best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=100, n_iter_one_temp=50, min_temp=0.1,
+                                                epsilon=0.01, n_iter_without_improvement=10, initial_solution=True)
+toc = time.time()
+
+
+print("AFTER OPTIMIZATION")
+print(SM)
+print("Number of iterations: ", num_of_iter)
+print("Best cost", best_cost)
+print("Time: ", toc-tic)
+print("\nEssa")
+
+SM.improve_results()
+print("Improved2 SCHEDULE")
+print(SM)
+print('Improved2 cost: ', SM.get_cost())
 
 #  TODO: - poprawienie rozwiązania podczas działania algorytmu SA (przenoszenie względem prowadzących)
 #  TODO: - dodanie listy kompetencji i mniej losowe przydzielanie prowadzących do zajęć (może jako prawdopodobieństwo)
