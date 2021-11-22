@@ -247,7 +247,24 @@ class Schedule:
                     changed = False
 
                     for i in range(len(trainings2) - 1):
-                        pass
+                        for j in range(i+1, len(trainings2)):
+                            if len(trainings2[i][1]) < len(trainings2[j][2]):
+                                for ts_iter in range(len(trainings2[i][1])):
+                                    self.schedule[c, trainings2[j][0], trainings2[j][2][ts_iter]] = \
+                                        self.schedule[c, trainings2[i][0], trainings2[i][1][ts_iter]]
+
+                                    self.schedule[c, trainings2[i][0], trainings2[i][1][ts_iter]] = None
+                                    # update trainings
+                                    trainings2[j][1].append(trainings2[i][1][ts_iter])
+                                    trainings2[j][2].pop(ts_iter)
+
+                                    trainings2[i][2].append(trainings2[i][1][ts_iter])
+
+                                    changed = True
+
+                            if changed:
+                                trainings2[i][1] = []
+                                break
 
 
 
@@ -260,21 +277,25 @@ SM = Schedule(max_clients_per_training=5)
 SM.generate_random_schedule(greedy=False)
 print("INITIAL SCHEDULE")
 print(SM)
-SM.improve_results()
 print('Initial cost: ', SM.get_cost())
 
-tic = time.time()
-best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
-                                                epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True)
-toc = time.time()
-
-
-print("AFTER OPTIMIZATION")
+SM.improve_results()
+print("Improved SCHEDULE")
 print(SM)
-print("Number of iterations: ", num_of_iter)
-print("Best cost", best_cost)
-print("Time: ", toc-tic)
-print("\nEssa")
+print('Initial cost: ', SM.get_cost())
+
+# tic = time.time()
+# best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
+#                                                 epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True)
+# toc = time.time()
+#
+#
+# print("AFTER OPTIMIZATION")
+# print(SM)
+# print("Number of iterations: ", num_of_iter)
+# print("Best cost", best_cost)
+# print("Time: ", toc-tic)
+# print("\nEssa")
 
 #  TODO: - poprawienie rozwiązania podczas działania algorytmu SA (przenoszenie względem prowadzących)
 #  TODO: - dodanie listy kompetencji i mniej losowe przydzielanie prowadzących do zajęć (może jako prawdopodobieństwo)
