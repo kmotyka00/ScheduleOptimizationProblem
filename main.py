@@ -4,7 +4,8 @@ from typing import List
 from enum import Enum
 import copy
 import random
-import cv2
+import time
+
 
 class LessonType(Enum):
     """ Class enumerating lesson types,
@@ -64,9 +65,9 @@ class Schedule:
                  class_num=1, day_num=6, time_slot_num=6, max_clients_per_training=5,
                  ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=200):
 
-        self.class_id = np.arange(class_num)
-        self.day = np.arange(day_num)  # monday - saturday
-        self.time_slot = np.arange(time_slot_num)
+        self.class_id = class_num
+        self.day = day_num  # monday - saturday
+        self.time_slot = time_slot_num
         self.max_clients_per_training = max_clients_per_training
 
         self.clients = list()
@@ -82,10 +83,10 @@ class Schedule:
             self.instructors.append(Instructor(instructor['Instructor_ID'],
                                                [LessonType(int(elem)) for elem in
                                                 instructor['Lesson_Types'].split(sep=" ")]))
-        self.instructors = np.array(self.instructors)
+        self.instructors = np.array(self.instructors) #  lista na początku żeby móc appendować na essie
         self.schedule = np.array([None for x in
-                                  range(self.class_id.shape[0] * self.day.shape[0] * self.time_slot.shape[0])])
-        self.schedule = self.schedule.reshape((self.class_id.shape[0], self.day.shape[0], self.time_slot.shape[0]))
+                                  range(self.class_id * self.day * self.time_slot)])
+        self.schedule = self.schedule.reshape((self.class_id, self.day, self.time_slot))
 
         # economy
         self.ticket_cost = ticket_cost
@@ -100,22 +101,27 @@ class Schedule:
         free_ts = list(np.arange(self.schedule.shape[0]))
         for lesson_type in LessonType:
             all_participants = [client for client in self.clients if lesson_type in client.selected_training]
+            all_instructors = [instructor for instructor in self.instructors if
+                               lesson_type in instructor.qualifications]
             num_of_trainings = int(np.ceil(len(all_participants) / self.max_clients_per_training))
             for training in range(num_of_trainings):
                 participants = all_participants[training * self.max_clients_per_training:
                                                 training * self.max_clients_per_training + self.max_clients_per_training]
-
                 if greedy:
-                    instructor = self.instructors[i % self.instructors.shape[0]]
-                    self.schedule[i] = Lesson(instructor, lesson_type, participants)
+                    lesson_id = i
                     i += 1
-
                 else:
-                    random_id = free_ts.pop(random.randint(0, len(free_ts) - 1))
-                    instructor = self.instructors[random_id % self.instructors.shape[0]]
-                    self.schedule[random_id] = Lesson(instructor, lesson_type, participants)
+                    lesson_id = free_ts.pop(random.randint(0, len(free_ts) - 1))
 
-        self.schedule = self.schedule.reshape((self.class_id.shape[0], self.day.shape[0], self.time_slot.shape[0]))
+                interval = self.day * self.time_slot
+                for ts in range(lesson_id % interval, self.schedule.shape[0], interval):
+                    if self.schedule[ts] != None:
+                        all_instructors.remove(self.schedule[ts].instructor.id)  # TODO: TEST
+
+                instructor = random.choice(all_instructors)
+                self.schedule[lesson_id] = Lesson(instructor, lesson_type, participants)
+
+        self.schedule = self.schedule.reshape((self.class_id, self.day, self.time_slot))
 
     def get_cost(self, current_solution=None):
         # dla każdej komórki w current_solution policzyć liczbę uczestników,
@@ -127,8 +133,8 @@ class Schedule:
             current_solution = self.schedule
 
         participants_sum = 0
-        instructors_hours = np.zeros(shape=(self.instructors.shape[0], self.day.shape[0]))
-        class_per_day = np.zeros(shape=(self.class_id.shape[0], self.day.shape[0]))
+        instructors_hours = np.zeros(shape=(self.instructors.shape[0], self.day))
+        class_per_day = np.zeros(shape=(self.class_id, self.day))
 
         for c in range(current_solution.shape[0]):
             for d in range(current_solution.shape[1]):
@@ -142,7 +148,6 @@ class Schedule:
                self.hour_pay * instructors_hours.sum() - \
                self.pay_for_presence * (instructors_hours > 0).sum() - \
                self.class_renting_cost * class_per_day.sum()
-
 
     def get_neighbor(self, current_solution):
 
@@ -218,25 +223,66 @@ class Schedule:
 
         return result
 
+    def improve_results(self):
 
-SM = Schedule(max_clients_per_training=2)
+        for instructor in self.instructors:
+            trainings = list()
+            for c in range(self.schedule.shape[0]):
+                for d in range(self.schedule.shape[1]):
+                    timeslots = list()
+                    free_ts = list()
+                    for ts in range(self.schedule.shape[2]):
+                        if self.schedule[c, d, ts] != None:
+                            if self.schedule[c, d, ts].instructor == instructor:
+                                timeslots.append(ts)
+                        else:
+                            free_ts.append(ts)
+                    if len(timeslots) > 0:
+                        trainings.append([d, timeslots, free_ts])
+
+                changed = True
+                trainings2 = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
+                print(trainings2)
+                while changed:
+                    changed = False
+
+                    for i in range(len(trainings2) - 1):
+                        pass
+
+
+
+
+
+
+
+SM = Schedule(max_clients_per_training=5)
 
 SM.generate_random_schedule(greedy=False)
 print("INITIAL SCHEDULE")
 print(SM)
+SM.improve_results()
 print('Initial cost: ', SM.get_cost())
 
-best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=1000, n_iter_one_temp=10, min_temp=0.1,
-                                                epsilon=0, n_iter_without_improvement=1000, initial_solution=True)
+tic = time.time()
+best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
+                                                epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True)
+toc = time.time()
+
 
 print("AFTER OPTIMIZATION")
 print(SM)
 print("Number of iterations: ", num_of_iter)
 print("Best cost", best_cost)
-
+print("Time: ", toc-tic)
 print("\nEssa")
 
 #  TODO: - poprawienie rozwiązania podczas działania algorytmu SA (przenoszenie względem prowadzących)
 #  TODO: - dodanie listy kompetencji i mniej losowe przydzielanie prowadzących do zajęć (może jako prawdopodobieństwo)
-#  TODO: - ograniczenia
-#  TODO: - ogarnąć co już zaimplemetnowaliśmy (jakie ograniczenia już są)
+#  TODO: - ograniczenia - chwiliowo pomijamy ograniczenie 6) i 7)
+#  TODO: - z 7) można zrobić tak, że po ułożeniu już planu sprawdzamy dla każdego użytkownika ile razy w tygodniu
+#   trenuje i jeśli jego liczba treningów jest większa niż max to przenosimy go do innej grupy. Można założyć na
+#   początku działania algorytmu limit np. 12 (zamiast 10) żeby mieć jakieś pole manewru. Takie podejście może
+#   okazać się lepsze bo nie utrudnia działania algorytmu a takich przypadków nie powinno być dużo
+
+#  TODO: - inaczej wybierać otoczenie
+
