@@ -302,7 +302,7 @@ class Schedule:
                                 break
 
 
-SM = Schedule(max_clients_per_training=5)
+SM = Schedule(max_clients_per_training=5, time_slot_num=6)
 SM.generate_random_schedule(greedy=False)
 
 print("\nINITIAL SCHEDULE")
@@ -333,6 +333,5 @@ print("Best improved earnings: ", SM.get_cost())
 #   trenuje i jeśli jego liczba treningów jest większa niż max to przenosimy go do innej grupy. Można założyć na
 #   początku działania algorytmu limit np. 12 (zamiast 10) żeby mieć jakieś pole manewru. Takie podejście może
 #   okazać się lepsze bo nie utrudnia działania algorytmu a takich przypadków nie powinno być dużo
-
 #  TODO: - inaczej wybierać otoczenie
-
+#  TODO: - dodać dokumentację
