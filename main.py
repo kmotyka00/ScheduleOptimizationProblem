@@ -44,6 +44,8 @@ class Client:
     '''
     def __init__(self, id: int, selected_training: List[LessonType] = None):
         self.id = id
+
+        # checks if list of selected trainings was given, if not, creates empty array
         if selected_training is None:
             self.selected_training = np.array(list())
         else:
@@ -81,6 +83,8 @@ class Instructor:
     '''
     def __init__(self, id, qualifications: List[LessonType] = None):
         self.id = id
+
+        # checks if qualifications list was given, if not, creates empty array
         if qualifications is None:
             self.qualifications = np.array(list())
         else:
@@ -121,6 +125,8 @@ class Lesson:
     def __init__(self, instructor: Instructor, lesson_type: LessonType, participants: List[Client] = None):
         self.instructor = instructor
         self.lesson_type = lesson_type
+
+        # checks if participants list was given, if not, creates empty array
         if participants is None:
             self.participants = np.array(list())
         else:
@@ -136,6 +142,8 @@ class Lesson:
         str
             string to be printed
         '''
+
+        # changes "LessonType.Type" representation to "Type" and prints it with instructor id
         lesson_type = str(self.lesson_type)
         lt = lesson_type.split(sep='.')
         lesson_type = lt[1]
@@ -233,31 +241,58 @@ class Schedule:
             classes are held in the row). If greedy=False classes are initialized
             totally randomly.
         '''
-        self.schedule = self.schedule.reshape((-1, 1))  # temp reshaping for easier indexing
+
+        # reshaping to a vector [1 x classes * days * time slots] to facilitate iterating 
+        self.schedule = self.schedule.reshape((-1, 1))  
         i = 0
+
+        # list of free time slots in particular days 
         free_ts = list(np.arange(self.schedule.shape[0]))
+
+        # iterating over lesson types
         for lesson_type in LessonType:
+
+            # list of all participants and instructor who have chosen particular lesson type
             all_participants = [client for client in self.clients if lesson_type in client.selected_training]
             all_instructors = [instructor for instructor in self.instructors if
                                lesson_type in instructor.qualifications]
+
+            # number of trainings which need to be coducted to please all clients
             num_of_trainings = int(np.ceil(len(all_participants) / self.max_clients_per_training))
+
+            # itereting over trainings which need to be conducted
             for training in range(num_of_trainings):
+
+                # dividing all participiants to particular groups
                 participants = all_participants[training * self.max_clients_per_training:
                                                 training * self.max_clients_per_training + self.max_clients_per_training]
+                
+                # choosing a way to allocate lessons in schedule
                 if greedy:
                     lesson_id = i
                     i += 1
                 else:
                     lesson_id = free_ts.pop(random.randint(0, len(free_ts) - 1))
 
+                # interval in vector self.schedule which represents a break between same time slots
+                # and days in different classes
                 interval = self.day * self.time_slot
+
+                # iterating over same days and time slots in different classes
                 for ts in range(lesson_id % interval, self.schedule.shape[0], interval):
+
+                    #checking if lesson is taking place 
                     if self.schedule[ts] != None:
+                        # removing inaccessible instructors from all_instructors list
                         all_instructors.remove(self.schedule[ts].instructor.id)  # TODO: TEST
 
+                # random choice of instructor from all_instructors list for new lesson
                 instructor = random.choice(all_instructors)
+
+                # putting new lesson to schedule
                 self.schedule[lesson_id] = Lesson(instructor, lesson_type, participants)
 
+        # reshaping self.schedule back to matrix
         self.schedule = self.schedule.reshape((self.class_id, self.day, self.time_slot))
 
     def get_cost(self, current_solution=None):
