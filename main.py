@@ -8,9 +8,11 @@ import time
 
 
 class LessonType(Enum):
-    """ Class enumerating lesson types,
+    """ 
+    Class enumerating lesson types,
     enumeration numbers are important,
-    because they are used in a questionnaire for customers """
+    because they are used in a questionnaire for customers 
+    """
     CELLULITE_KILLER = 0
     ZUMBA = 1
     ZUMBA_ADVANCED = 2
@@ -24,7 +26,23 @@ class LessonType(Enum):
 
 
 class Client:
-    def __init__(self, id, selected_training: List[LessonType] = None):
+    '''
+    A class used to represent a Client
+
+    ...
+    Atributes
+    ---------
+    id : int
+        a number which represents the client 
+    selected_training: List[LessonType]
+        list of the trainings selected by a client
+
+    Methods
+    -------
+    __str__()
+        Helps to print information about the client prettier and cleaner
+    '''
+    def __init__(self, id: int, selected_training: List[LessonType] = None):
         self.id = id
         if selected_training is None:
             self.selected_training = np.array(list())
@@ -36,6 +54,22 @@ class Client:
 
 
 class Instructor:
+    '''
+    A class used to represent an Instructor
+
+    ...
+    Atributes
+    ---------
+    id : int
+        a number which represents the instructor 
+    qualifications: List[LessonType]
+        list of the trainings which can be tought by the instructor
+
+    Methods
+    -------
+    __str__()
+        Helps to print information about the instructor prettier and cleaner
+    '''
     def __init__(self, id, qualifications: List[LessonType] = None):
         self.id = id
         if qualifications is None:
@@ -43,8 +77,29 @@ class Instructor:
         else:
             self.qualifications = np.array(qualifications)
 
+    def __str__(self) -> str:
+        return f"id: {self.id}, qualifications: {self.qualifications}"
+
 
 class Lesson:
+    '''
+    A class used to represent a Lesson
+
+    ...
+    Atributes
+    ---------
+    instructor : Instructor
+        an instructor which conducts classes
+    lesson_type: LessonType
+        type of the conducted classes
+    participiants: List[Client]
+        a list of clients which take part in the classes
+
+    Methods
+    -------
+    __str__()
+        Helps to print information about the lesson prettier and cleaner
+    '''
     def __init__(self, instructor: Instructor, lesson_type: LessonType, participants: List[Client] = None):
         self.instructor = instructor
         self.lesson_type = lesson_type
@@ -61,6 +116,51 @@ class Lesson:
 
 
 class Schedule:
+    '''
+    A class used to represent our Schedule 
+
+    ...
+    Atributes
+    ---------
+    client_file : str
+        the path to the file which contains information about the trainings selected by
+        clients (ids of the clients and selected training stored in a *.csv file)
+    instructor_file: str
+        the path to the file which contains information about the qualifications and ids
+        of the instructors stored in the *.csv file
+    class_num: int
+        the number of classrooms in the building
+    day_num: int
+        the number of days on which the classes are held
+    time_slot_num: int
+        the number of time slots during a day on which the classes are held
+    max_clients_per_training: int
+        maximum number of clients which can participate in the classes
+    ticket_cost: int
+        cost of a class ticket
+    hour_pay: int
+        instructor's hour pay
+    pay_for_presence: int
+        amount of money which instructor revieves for coming to the workplace
+    class_renting_cost: int 
+        cost of renting a class (per day)
+
+    Methods
+    -------
+    generate_random_schedule(greedy=False)
+        Based on parameters of our schedule generate random schedule
+    get_cost(current_solution=None)
+        Calculate cost of classes for a current schedule
+    get_neighbor(current_solution)
+        Move one lesson from current schedule to different timeslot
+    simulated_annealing(self, alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
+                        epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True)
+        Simulated Annealing algorithm which optimizes arranging of a schedule
+    improve_results()
+        Minimizes days of presence for each instructor
+    __str__()
+        Helps to print a current schedule preety and intuitive
+    '''
     def __init__(self, client_file: str = 'form_answers.csv', instructor_file: str = 'instructors_info.csv',
                  class_num=1, day_num=6, time_slot_num=6, max_clients_per_training=5,
                  ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=200):
@@ -206,23 +306,6 @@ class Schedule:
         self.schedule = best_solution
         return best_cost, total_counter
 
-    def __str__(self):
-
-        result = str()
-        days = ["----- MONDAY -----", "----- TUESDAY -----", "----- WEDNESDAY -----", "----- THURSDAY -----",
-                "----- FRIDAY -----", "----- SATURDAY -----"]
-        hour = ["16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00"]
-        for c in range(self.schedule.shape[0]):
-            for d in range(self.schedule.shape[1]):
-                result += "\n" + days[d] + "\n\n"
-                for ts in range(self.schedule.shape[2]):
-                    result += hour[ts] + "\t"
-                    if self.schedule[c, d, ts] is None:
-                        result += "Free\n"
-                    else:
-                        result += str(self.schedule[c, d, ts]) + "\n"
-
-        return result
 
     def improve_results(self):
 
@@ -300,7 +383,24 @@ class Schedule:
                                 trainings2 = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
                                 # przejdź do kolejnej iteracji dla i
                                 break
+     
+    def __str__(self):
 
+        result = str()
+        days = ["----- MONDAY -----", "----- TUESDAY -----", "----- WEDNESDAY -----", "----- THURSDAY -----",
+                "----- FRIDAY -----", "----- SATURDAY -----"]
+        hour = ["16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00"]
+        for c in range(self.schedule.shape[0]):
+            for d in range(self.schedule.shape[1]):
+                result += "\n" + days[d] + "\n\n"
+                for ts in range(self.schedule.shape[2]):
+                    result += hour[ts] + "\t"
+                    if self.schedule[c, d, ts] is None:
+                        result += "Free\n"
+                    else:
+                        result += str(self.schedule[c, d, ts]) + "\n"
+
+        return result
 
 SM = Schedule(max_clients_per_training=5, time_slot_num=6)
 SM.generate_random_schedule(greedy=False)
