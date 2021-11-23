@@ -150,13 +150,20 @@ class Schedule:
                self.class_renting_cost * class_per_day.sum()
 
     def get_neighbor(self, current_solution):
-
+        # get list of indices where lesson is scheduled
+        # using != None is necessary, because we are interested in
+        # checking if value in array is None, not if array is None
         not_none_id_list = np.argwhere(current_solution != None)
+        # choose random index from not_none_id_list
         random_not_none_id = tuple(random.choice(not_none_id_list))
 
+        # get list of indices where timeslot is free
+        # using == None is necessary, because we are interested in
+        # checking if value in array is None, not if array is None
         none_id_list = np.argwhere(current_solution == None)
         random_none_id = tuple(random.choice(none_id_list))
 
+        # swap values contained in drawn indices
         current_solution[random_none_id] = current_solution[random_not_none_id]
         current_solution[random_not_none_id] = None
         return current_solution
@@ -164,20 +171,25 @@ class Schedule:
     def simulated_annealing(self, alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
                             epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True):
 
+
         if not initial_solution:
             self.generate_random_schedule()  # self.schedule initialized
 
+        # copy existing schedule to prevent unwanted changes
         current_solution = copy.deepcopy(self.schedule)
         best_solution = copy.deepcopy(current_solution)
 
         current_temp = initial_temp
 
+        # count current cost
         current_cost = self.get_cost(current_solution)
         best_cost = self.get_cost(best_solution)
 
+        # counter for n_iter_without_improvement
         counter = 0
+        # counter of total number of iterations
         total_counter = 0
-
+        
         while current_temp > min_temp and counter < n_iter_without_improvement:
             for j in range(0, n_iter_one_temp):
                 total_counter += 1
@@ -226,10 +238,18 @@ class Schedule:
 
     def improve_results(self):
 
+        # loop repeating until there is no change to ensure
+        # that instructor 1 can be moved in space freed by instructor 3
         changed = True
         while changed:
             changed = False
+
+            # loop for each instructor
             for instructor in self.instructors:
+
+                # pick all trainings thought by instructor
+                # in format
+                # [day, list of timeslots of lessons thought by instructor, list of timeslots free in that day]
                 trainings = list()
                 for c in range(self.schedule.shape[0]):
                     for d in range(self.schedule.shape[1]):
@@ -244,61 +264,72 @@ class Schedule:
                         if len(timeslots) > 0:
                             trainings.append([d, timeslots, free_ts])
 
-                    trainings2 = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
-                    for i in range(len(trainings2) - 1):
-                        for j in range(i+1, len(trainings2)):
+                    # sorting trainings by number of lessons thought by instructor in that day
+                    trainings = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
+
+                    # for each day check if trainings can be reassigned
+                    # to some day with more trainings thought by that instructor
+                    for i in range(len(trainings) - 1):
+                        for j in range(i+1, len(trainings)):
                             timeslots_taken = list()
                             changed = False
-                            if len(trainings2[i][1]) <= len(trainings2[j][2]):
-                                for ts_iter in range(len(trainings2[i][1])):
-                                    self.schedule[c, trainings2[j][0], trainings2[j][2][ts_iter]] = \
-                                        self.schedule[c, trainings2[i][0], trainings2[i][1][ts_iter]]
+                            # check if lessons from trainings[i] can be reassigned
+                            # to the day represented by trainings[j]
+                            if len(trainings[i][1]) <= len(trainings[j][2]):
+                                for ts_iter in range(len(trainings[i][1])):
+                                    # reassign
+                                    self.schedule[c, trainings[j][0], trainings[j][2][ts_iter]] = \
+                                        self.schedule[c, trainings[i][0], trainings[i][1][ts_iter]]
 
-                                    self.schedule[c, trainings2[i][0], trainings2[i][1][ts_iter]] = None
-                                    # dodaj do zajętych w j
-                                    trainings2[j][1].append(trainings2[j][2][ts_iter])
-                                    # dodaj do zwolnionych w i
-                                    trainings2[i][2].append(trainings2[i][1][ts_iter])
-                                    # zapamiętaj do usunięcia z wolnych w j
-                                    timeslots_taken.append(trainings2[j][2][ts_iter])
+                                    self.schedule[c, trainings[i][0], trainings[i][1][ts_iter]] = None
+                                    # add to taken sluts in j
+                                    trainings[j][1].append(trainings[j][2][ts_iter])
+                                    # add to free slots in i
+                                    trainings[i][2].append(trainings[i][1][ts_iter])
+                                    # memorize to delete from free in j
+                                    timeslots_taken.append(trainings[j][2][ts_iter])
 
-                                    # zmienna po to aby po wrzuceniu i do j nie sprawdzać dalszych j
+                                    # mark that changes have been made
                                     changed = True
 
-                                # usuń zapamiętane
+                                # delete memorized slots from free in j
                                 for ts_iter in timeslots_taken:
-                                    trainings2[j][2].remove(ts_iter)
-                                # wyczyść listę zajętych dla i
-                                trainings2[i][1] = []
+                                    trainings[j][2].remove(ts_iter)
+                                # clear list of taken slots in i
+                                trainings[i][1] = []
 
-                            elif len(trainings2[i][2]) > len(trainings2[j][1]):
-                                for ts_iter in range(len(trainings2[j][1])):
-                                    self.schedule[c, trainings2[i][0], trainings2[i][2][ts_iter]] = \
-                                        self.schedule[c, trainings2[j][0], trainings2[j][1][ts_iter]]
+                            # if previous statement is untrue check if opposite reassignment can be performed,
+                            # i. e. check if lessons from trainings[j] can be reassigned
+                            # to the day represented by trainings[i]
+                            elif len(trainings[i][2]) > len(trainings[j][1]):
+                                for ts_iter in range(len(trainings[j][1])):
+                                    self.schedule[c, trainings[i][0], trainings[i][2][ts_iter]] = \
+                                        self.schedule[c, trainings[j][0], trainings[j][1][ts_iter]]
 
-                                    self.schedule[c, trainings2[j][0], trainings2[j][1][ts_iter]] = None
-                                    # zmienna po to aby po wrzuceniu i do j nie sprawdzać dalszych j
+                                    self.schedule[c, trainings[j][0], trainings[j][1][ts_iter]] = None
+                                    # add to taken slots in i
+                                    trainings[i][1].append(trainings[i][2][ts_iter])
+                                    # add to free sluts in j
+                                    trainings[j][2].append(trainings[j][1][ts_iter])
+                                    # memorize to delete from free in i
+                                    timeslots_taken.append(trainings[i][2][ts_iter])
+
+                                    # mark that changes have been made
                                     changed = True
-                                    # dodaj do zajętych w i
-                                    trainings2[i][1].append(trainings2[i][2][ts_iter])
-                                    # dodaj do zwolnionych w j
-                                    trainings2[j][2].append(trainings2[j][1][ts_iter])
-                                    # zapamiętaj do usunięcia z wolnych w i
-                                    timeslots_taken.append(trainings2[i][2][ts_iter])
 
-                                    # zmienna po to aby po wrzuceniu j do i nie sprawdzać dalszych j
-                                    changed = True
-
-                                # usuń zapamiętane
+                                # delete memorized slots from free in i
                                 for ts_iter in timeslots_taken:
-                                    trainings2[i][2].remove(ts_iter)
-                                    # wyczyść listę zajętych dla i
-                                trainings2[j][1] = []
+                                    trainings[i][2].remove(ts_iter)
+                                    # clear list of taken slots in i
+                                trainings[j][1] = []
 
+                            # if changes have been made
                             if changed:
-                                # aby utrzymać właściwą kolejność
-                                trainings2 = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
-                                # przejdź do kolejnej iteracji dla i
+                                # sort trainings to keep ascending order of
+                                # number of lessons thought by instructor in that day
+                                trainings = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
+                                # go to next iteration of i - next iterations for that i are unnecessary,
+                                # because trainings[i] have been reassigned
                                 break
 
 
@@ -310,8 +341,8 @@ print(SM)
 print('Initial earnings: ', SM.get_cost())
 
 tic = time.time()
-best_cost, num_of_iter = SM.simulated_annealing(alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
-                                                epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True)
+best_cost, num_of_iter = SM.simulated_annealing(alpha=0.999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
+                                                epsilon=0.01, n_iter_without_improvement=10, initial_solution=True)
 toc = time.time()
 
 print("\nAFTER OPTIMIZATION")
