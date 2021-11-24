@@ -5,6 +5,7 @@ from enum import Enum
 import copy
 import random
 import time
+import matplotlib.pyplot as plt
 
 
 class LessonType(Enum):
@@ -423,6 +424,9 @@ class Schedule:
         # counter of total number of iterations
         total_counter = 0
 
+        # list containing all costs
+        all_costs = list()
+
         # loop while non of stopping criteria is fulfilled
         while current_temp > min_temp and counter < n_iter_without_improvement:
             for j in range(0, n_iter_one_temp):
@@ -444,6 +448,8 @@ class Schedule:
                     if s < np.exp(delta/current_temp):
                         current_solution = neighbor_solution
                         current_cost = neighbor_cost
+
+                all_costs.append(current_cost)
             # decrease temperature
             current_temp = alpha * current_temp
             # check if new solution gives different cost - 2nd stopping criteria
@@ -453,7 +459,7 @@ class Schedule:
                 counter = 0
 
         self.schedule = best_solution
-        return best_cost, total_counter
+        return best_cost, total_counter, all_costs
 
 
     def improve_results(self):
@@ -598,9 +604,10 @@ print(SM)
 print('Initial earnings: ', SM.get_cost())
 
 tic = time.time()
-best_cost, num_of_iter = SM.simulated_annealing(alpha=0.999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
+best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=0.99, initial_temp=1000, n_iter_one_temp=10, min_temp=0.1,
                                                 epsilon=0.01, n_iter_without_improvement=10, initial_solution=True)
 toc = time.time()
+
 
 print("\nAFTER OPTIMIZATION")
 print(SM)
@@ -613,7 +620,12 @@ print("\nIMPROVED SCHEDULE")
 print(SM)
 print("Best improved earnings: ", SM.get_cost())
 
-#  TODO: - zwiększyć liczbę klas
+
+plt.figure()
+plt.plot(all_costs)
+plt.show()
+
+#  TODO: - zwiększyć liczbę classroomów
 #  TODO: - poprawienie rozwiązania podczas działania algorytmu SA (przenoszenie względem prowadzących)
 #  TODO: - dodanie listy kompetencji i mniej losowe przydzielanie prowadzących do zajęć (może jako prawdopodobieństwo)
 #  TODO: - ograniczenia - chwiliowo pomijamy ograniczenie 6) i 7)
