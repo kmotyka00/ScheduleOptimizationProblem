@@ -1,3 +1,5 @@
+
+
 import numpy as np
 import pandas as pd
 from typing import List
@@ -24,6 +26,7 @@ class LessonType(Enum):
     CITY_PUMP = 7
     STRETCHING = 8
     YOGA = 9
+
 
 
 class Client:
@@ -338,7 +341,7 @@ class Schedule:
                self.pay_for_presence * (instructors_hours > 0).sum() - \
                self.class_renting_cost * class_per_day.sum()
 
-    def get_neighbor(self, current_solution):
+    def get_neighbor(self, current_solution, neighborhood_type_lst: List[str]):
         """
         A method which generates new solution which differ from previous one
         only by one classes.
@@ -351,31 +354,81 @@ class Schedule:
         current_solution: np.array
             Parameter which contains solution for which we want to find a neighbor.
 
+        neighborhood_type_lst: List[str]
+            Parameter specify method of choosing neighborhood
+
         Returns
         -------
         np.array
             Generated neighbor.
         """
-        # get list of indices where lesson is scheduled
-        # using != None is necessary, because we are interested in
-        # checking if value in array is None, not if array is None
-        not_none_id_list = np.argwhere(current_solution != None)
-        # choose random index from not_none_id_list
-        random_not_none_id = tuple(random.choice(not_none_id_list))
+        # FIXME: zrobić to w pętli
+        for neighborhood_type in neighborhood_type_lst:
 
-        # get list of indices where timeslot is free
-        # using == None is necessary, because we are interested in
-        # checking if value in array is None, not if array is None
-        none_id_list = np.argwhere(current_solution == None)
-        random_none_id = tuple(random.choice(none_id_list))
+            if neighborhood_type == 'move_one' or neighborhood_type == 'move_two':
+                # reshaping current_solution to make sure it's a matrix
+                current_solution = current_solution.reshape((self.class_id*self.day*self.time_slot, -1, -1))
+                if neighborhood_type == 'move_one':
+                    i_max = 1
+                else:
+                    i_max = 2
+                for i in range(i_max):
+                    # get list of indices where lesson is scheduled
+                    # using != None is necessary, because we are interested in
+                    # checking if value in array is None, not if array is None
+                    not_none_id_list = np.argwhere(current_solution != None)
+                    # choose random index from not_none_id_list
+                    random_not_none_id = tuple(random.choice(not_none_id_list))
 
-        # swap values contained in drawn indices
-        current_solution[random_none_id] = current_solution[random_not_none_id]
-        current_solution[random_not_none_id] = None
+                    # get list of indices where timeslot is free
+                    # using == None is necessary, because we are interested in
+                    # checking if value in array is None, not if array is None
+                    none_id_list = np.argwhere(current_solution == None)
+                    random_none_id = tuple(random.choice(none_id_list))
+
+                    # swap values contained in drawn indices
+                    current_solution[random_none_id] = current_solution[random_not_none_id]
+                    current_solution[random_not_none_id] = None
+            if neighborhood_type == 'move_to_most_busy' or neighborhood_type == 'swap_with_most_busy':
+                # reshaping current_solution to make sure it's a matrix
+                current_solution = current_solution.reshape((self.class_id, self.day, self.time_slot))
+
+                most_busy = None
+                most_trainings = 0
+                least_busy = None
+                least_trainings = self.time_slot
+                for c in range(self.schedule.shape[0]):
+                    for d in range(self.schedule.shape[1]):
+                        trainings_num = np.count_nonzero(current_solution[c, d, :] != None)
+                        if neighborhood_type == 'move_to_most_busy':
+                            condition = most_trainings <= trainings_num < self.time_slot
+                        else:
+                            condition = most_trainings <= trainings_num
+
+                        if condition:
+                            most_trainings = trainings_num
+                            most_busy = (c, d)
+                        if least_trainings >= trainings_num >= 1:
+                            least_trainings = trainings_num
+                            least_busy = (c, d)
+
+                c_least, d_least = least_busy
+                id_least = random.choice(np.argwhere(current_solution[c_least, d_least, :] != None))
+                c_most, d_most = most_busy
+                if neighborhood_type == 'move_to_most_busy':
+                    id_most = random.choice(np.argwhere(current_solution[c_most, d_most, :] == None))
+                    current_solution[c_most, d_most, id_most] = current_solution[c_least, d_least, id_least]
+                    current_solution[c_least, d_least, id_least] = None
+                elif neighborhood_type == 'swap_with_most_busy':
+                    id_most = random.choice(np.argwhere(current_solution[c_most, d_most, :] != None))
+                    current_solution[c_most, d_most, id_most], current_solution[c_least, d_least, id_least] \
+                        = current_solution[c_least, d_least, id_least], current_solution[c_most, d_most, id_most]
+
         return current_solution
 
     def simulated_annealing(self, alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
-                            epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True):
+                            epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True,
+                            neighborhood_type_lst=['move_one']):
         """
         Simulated Annealing is a probabilistic technique for approximating the global optimum
         of a given function.
@@ -400,7 +453,8 @@ class Schedule:
         initial_solution: bool, default=True
             If initial_solution solution is False algorithm will generate random schedule.
             If True, algortihm will optimize self.schedule.
-        
+        neighborhood_type_lst: List[str]
+            Parameter specify method of choosing neighborhood
 
         Returns
         -------
@@ -435,7 +489,7 @@ class Schedule:
         while current_temp > min_temp and counter < n_iter_without_improvement:
             for j in range(0, n_iter_one_temp):
                 total_counter += 1
-                neighbor_solution = self.get_neighbor(current_solution)
+                neighbor_solution = self.get_neighbor(current_solution, neighborhood_type_lst)
                 neighbor_cost = self.get_cost(neighbor_solution)
                 # delta - value to evaluate quality of new solution
                 delta = neighbor_cost - current_cost
@@ -475,8 +529,6 @@ class Schedule:
         ...
         Parameters
         ----------
-        current_solution: np.array
-            Parameter which contains solution for which we want to find a neighbor.
 
         """
         # loop repeating until there is no change to ensure
@@ -611,7 +663,7 @@ tic = time.time()
 best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=0.99, initial_temp=1000, n_iter_one_temp=10,
                                                            min_temp=0.1,
                                                            epsilon=0.01, n_iter_without_improvement=10,
-                                                           initial_solution=True)
+                                                           initial_solution=True, neighborhood_type='move_to_most_busy')
 toc = time.time()
 
 print("\nAFTER OPTIMIZATION")
@@ -637,5 +689,5 @@ plt.show()
 #   trenuje i jeśli jego liczba treningów jest większa niż max to przenosimy go do innej grupy. Można założyć na
 #   początku działania algorytmu limit np. 12 (zamiast 10) żeby mieć jakieś pole manewru. Takie podejście może
 #   okazać się lepsze bo nie utrudnia działania algorytmu a takich przypadków nie powinno być dużo
-#  TODO: - inaczej wybierać otoczenie
+#  TODO: - inaczej wybierać otoczenie - zmiana instruktorów
 #  TODO: - dodać dokumentację
