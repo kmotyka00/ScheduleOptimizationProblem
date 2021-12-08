@@ -14,6 +14,16 @@ import kivy.clock
 import webbrowser
 import threading
 
+
+class Optimize(Widget):
+    neighborhood_type_lst = list()
+
+    def checkbox_click(self, instance, value, neighborhood_type):
+        if value is True:
+            Optimize.neighborhood_type_lst.append(neighborhood_type)
+        else:
+            Optimize.neighborhood_type_lst.remove(neighborhood_type)
+
 class MainWindow(Screen):
     pass
 
