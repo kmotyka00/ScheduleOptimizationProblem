@@ -1,5 +1,10 @@
 WindowManager:
     MainWindow:
+    Optimize:
+    LoadFiles:
+    AboutOrganizer:
+    SeeSchedule:
+
 
 <Button>
     font_size: 32
@@ -12,3 +17,106 @@ WindowManager:
     font_name: 'fonts/Lcd.ttf'
     font_size: '40dp'
     color: 1, .5, 1, 1
+
+<MainWindow>:
+    name: 'menu'
+
+    GridLayout:
+
+        #orientation: 'vertical'
+        #size: root.width, root.height
+        cols: 2
+
+        BoxLayout:
+            orientation: 'vertical'
+            Image:
+                source: 'images/schedule-icon.png'
+            Label:
+                text: 'Schedule Organizer'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: 1, .5, 1, 1
+
+        BoxLayout:
+            orientation: 'vertical'
+
+            Button:
+                text: 'Optimize'
+                on_release:
+                    app.root.current = 'optimize'
+                    root.manager.transition.direction = 'left'
+
+            Button:
+                text: 'Load Files'
+                on_release:
+                    app.root.current = 'load_files'
+                    root.manager.transition.direction = 'left'
+
+
+            Button:
+                text: 'About Organizer'
+                on_release:
+                    app.root.current = 'about_organizer'
+                    root.manager.transition.direction = 'left'
+
+            Button:
+                text: 'See Schedule'
+                on_release:
+                    app.root.current = 'see_schedule'
+                    root.manager.transition.direction = 'left'
+
+            Button:
+                id: btnExit
+                text: 'Exit'
+                on_press: app.stop()
+
+
+<Optimize>:
+    name: 'optimize'
+    GridLayout:
+        cols: 1
+        size_hint: (1, None)
+        height: '100dp'
+        Button:
+            text: 'Go Back'
+            on_release:
+                app.root.current = 'menu'
+                root.manager.transition.direction = 'right'
+
+<LoadFiles>:
+    name: 'load_files'
+    GridLayout:
+        cols: 1
+        size_hint: (1, None)
+        height: '100dp'
+        Button:
+            text: 'Go Back'
+            on_release:
+                app.root.current = 'menu'
+                root.manager.transition.direction = 'right'
+
+
+<AboutOrganizer>:
+    name: 'about_organizer'
+    GridLayout:
+        cols: 1
+        size_hint: (1, None)
+        height: '100dp'
+        Button:
+            text: 'Go Back'
+            on_release:
+                app.root.current = 'menu'
+                root.manager.transition.direction = 'right'
+
+
+<SeeSchedule>
+    name: 'see_schedule'
+    GridLayout:
+        cols: 1
+        size_hint: (1, None)
+        height: '100dp'
+        Button:
+            text: 'Go Back'
+            on_release:
+                app.root.current = 'menu'
+                root.manager.transition.direction = 'right'

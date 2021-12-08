@@ -17,6 +17,18 @@ import threading
 class MainWindow(Screen):
     pass
 
+class Optimize(Screen):
+    pass
+
+class LoadFiles(Screen):
+    pass
+
+class AboutOrganizer(Screen):
+    pass
+
+class SeeSchedule(Screen):
+    pass
+
 class WindowManager(ScreenManager):
     pass
 
