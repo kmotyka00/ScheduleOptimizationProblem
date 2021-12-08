@@ -351,7 +351,7 @@ class Schedule:
         ...
         Parameters
         ----------
-        current_solution: np.array
+        input_current_solution: np.array
             Parameter which contains solution for which we want to find a neighbor.
 
         neighborhood_type_lst: List[str]
@@ -362,12 +362,10 @@ class Schedule:
         np.array
             Generated neighbor.
         """
-        # FIXME: zrobić to w pętli
         for neighborhood_type in neighborhood_type_lst:
-
             if neighborhood_type == 'move_one' or neighborhood_type == 'move_two':
                 # reshaping current_solution to make sure it's a matrix
-                current_solution = current_solution.reshape((self.class_id*self.day*self.time_slot, -1, -1))
+                current_solution = current_solution.reshape((-1, 1, 1))
                 if neighborhood_type == 'move_one':
                     i_max = 1
                 else:
@@ -424,11 +422,12 @@ class Schedule:
                     current_solution[c_most, d_most, id_most], current_solution[c_least, d_least, id_least] \
                         = current_solution[c_least, d_least, id_least], current_solution[c_most, d_most, id_most]
 
+        current_solution = current_solution.reshape((self.class_id, self.day, self.time_slot))
         return current_solution
 
     def simulated_annealing(self, alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
                             epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True,
-                            neighborhood_type_lst=['move_one']):
+                            neighborhood_type_lst=None):
         """
         Simulated Annealing is a probabilistic technique for approximating the global optimum
         of a given function.
@@ -464,6 +463,9 @@ class Schedule:
             Number of iterations processed when the algorithm was running.
 
         """
+        if neighborhood_type_lst is None:
+            neighborhood_type_lst = ['move_one']
+
         if not initial_solution:
             self.generate_random_schedule()  # self.schedule initialized
 
@@ -663,7 +665,7 @@ tic = time.time()
 best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=0.99, initial_temp=1000, n_iter_one_temp=10,
                                                            min_temp=0.1,
                                                            epsilon=0.01, n_iter_without_improvement=10,
-                                                           initial_solution=True, neighborhood_type='move_to_most_busy')
+                                                           initial_solution=True, neighborhood_type_lst=['move_to_most_busy', 'move_two', 'swap_with_most_busy'])
 toc = time.time()
 
 print("\nAFTER OPTIMIZATION")
@@ -679,6 +681,9 @@ print("Best improved earnings: ", SM.get_cost())
 
 plt.figure()
 plt.plot(all_costs)
+plt.title('Goal function over number of iterations')
+plt.xlabel('Number of iterations')
+plt.ylabel('Earnings [$]')
 plt.show()
 
 #  TODO: - zwiększyć liczbę classroomów
