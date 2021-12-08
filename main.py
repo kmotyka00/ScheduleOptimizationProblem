@@ -27,7 +27,7 @@ class LessonType(Enum):
 
 
 class Client:
-    '''
+    """
     A class used to represent a Client
 
     ...
@@ -42,7 +42,8 @@ class Client:
     -------
     __str__()
         Helps to print information about the client prettier and cleaner
-    '''
+    """
+
     def __init__(self, id: int, selected_training: List[LessonType] = None):
         self.id = id
 
@@ -52,8 +53,8 @@ class Client:
         else:
             self.selected_training = np.array(selected_training)
 
-    def __str__(self) -> str:   
-        '''
+    def __str__(self) -> str:
+        """
         A method which helps to print information about the client
 
         ...
@@ -61,12 +62,12 @@ class Client:
         -------
         str
             string to be printed
-        '''
+        """
         return f"id: {self.id}, selected_training: {self.selected_training}"
 
 
 class Instructor:
-    '''
+    """
     A class used to represent an Instructor
 
     ...
@@ -81,7 +82,8 @@ class Instructor:
     -------
     __str__()
         Helps to print information about the instructor prettier and cleaner
-    '''
+    """
+
     def __init__(self, id, qualifications: List[LessonType] = None):
         self.id = id
 
@@ -92,7 +94,7 @@ class Instructor:
             self.qualifications = np.array(qualifications)
 
     def __str__(self) -> str:
-        '''
+        """
         A method which helps to print information about the instructor
 
         ...
@@ -100,12 +102,12 @@ class Instructor:
         -------
         str
             string to be printed
-        '''
+        """
         return f"id: {self.id}, qualifications: {self.qualifications}"
 
 
 class Lesson:
-    '''
+    """
     A class used to represent a Lesson
 
     ...
@@ -122,7 +124,8 @@ class Lesson:
     -------
     __str__()
         Helps to print information about the lesson prettier and cleaner
-    '''
+    """
+
     def __init__(self, instructor: Instructor, lesson_type: LessonType, participants: List[Client] = None):
         self.instructor = instructor
         self.lesson_type = lesson_type
@@ -134,7 +137,7 @@ class Lesson:
             self.participants = np.array(participants)
 
     def __str__(self):
-        '''
+        """
         A method which helps to print information about the lesson
 
         ...
@@ -142,7 +145,7 @@ class Lesson:
         -------
         str
             string to be printed
-        '''
+        """
 
         # changes "LessonType.Type" representation to "Type" and prints it with instructor id
         lesson_type = str(self.lesson_type)
@@ -152,7 +155,7 @@ class Lesson:
 
 
 class Schedule:
-    '''
+    """
     A class used to represent our Schedule 
 
     ...
@@ -196,7 +199,8 @@ class Schedule:
         Minimizes days of presence for each instructor
     __str__()
         Helps to print a current schedule preety and intuitive
-    '''
+    """
+
     def __init__(self, client_file: str = 'form_answers.csv', instructor_file: str = 'instructors_info.csv',
                  class_num=1, day_num=6, time_slot_num=6, max_clients_per_training=5,
                  ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=200):
@@ -218,7 +222,7 @@ class Schedule:
             self.instructors.append(Instructor(instructor['Instructor_ID'],
                                                [LessonType(int(elem)) for elem in
                                                 instructor['Lesson_Types'].split(sep=" ")]))
-        self.instructors = np.array(self.instructors) #  lista na początku żeby móc appendować na essie
+        self.instructors = np.array(self.instructors)  # lista na początku żeby móc appendować na essie
         self.schedule = np.array([None for x in
                                   range(self.class_id * self.day * self.time_slot)])
         self.schedule = self.schedule.reshape((self.class_id, self.day, self.time_slot))
@@ -228,9 +232,9 @@ class Schedule:
         self.hour_pay = hour_pay
         self.pay_for_presence = pay_for_presence
         self.class_renting_cost = class_renting_cost
-    
+
     def generate_random_schedule(self, greedy=False):
-        '''
+        """
         A method which generates random schedule with respect to parameters of Schedule class.
         
         ...
@@ -241,10 +245,10 @@ class Schedule:
             then all classes are stored time slot by time slot in our schedule (all
             classes are held in the row). If greedy=False classes are initialized
             totally randomly.
-        '''
+        """
 
         # reshaping to a vector [1 x classes * days * time slots] to facilitate iterating 
-        self.schedule = self.schedule.reshape((-1, 1))  
+        self.schedule = self.schedule.reshape((-1, 1))
         i = 0
 
         # list of free time slots in particular days 
@@ -267,7 +271,7 @@ class Schedule:
                 # dividing all participiants to particular groups
                 participants = all_participants[training * self.max_clients_per_training:
                                                 training * self.max_clients_per_training + self.max_clients_per_training]
-                
+
                 # choosing a way to allocate lessons in schedule
                 if greedy:
                     lesson_id = i
@@ -282,7 +286,7 @@ class Schedule:
                 # iterating over same days and time slots in different classes
                 for ts in range(lesson_id % interval, self.schedule.shape[0], interval):
 
-                    #checking if lesson is taking place 
+                    # checking if lesson is taking place 
                     if self.schedule[ts] != None:
                         # removing inaccessible instructors from all_instructors list
                         all_instructors.remove(self.schedule[ts].instructor.id)  # TODO: TEST
@@ -445,7 +449,7 @@ class Schedule:
                 # else if s is small enough take it anyway
                 else:
                     s = random.uniform(0, 1)
-                    if s < np.exp(delta/current_temp):
+                    if s < np.exp(delta / current_temp):
                         current_solution = neighbor_solution
                         current_cost = neighbor_cost
 
@@ -461,9 +465,8 @@ class Schedule:
         self.schedule = best_solution
         return best_cost, total_counter, all_costs
 
-
     def improve_results(self):
-        '''
+        """
         Minimizes days of presence for each instructor.
         
         Method which looks for days when instructor teaches only one class and tries
@@ -475,7 +478,7 @@ class Schedule:
         current_solution: np.array
             Parameter which contains solution for which we want to find a neighbor.
 
-        '''
+        """
         # loop repeating until there is no change to ensure
         # that instructor 1 can be moved in space freed by instructor 3
         changed = True
@@ -508,7 +511,7 @@ class Schedule:
                     # for each day check if trainings can be reassigned
                     # to some day with more trainings thought by that instructor
                     for i in range(len(trainings) - 1):
-                        for j in range(i+1, len(trainings)):
+                        for j in range(i + 1, len(trainings)):
                             timeslots_taken = list()
                             changed = False
                             # check if lessons from trainings[i] can be reassigned
@@ -569,9 +572,9 @@ class Schedule:
                                 # go to next iteration of i - next iterations for that i are unnecessary,
                                 # because trainings[i] have been reassigned
                                 break
-     
+
     def __str__(self):
-        '''
+        """
         Helps to print a current schedule preety and intuitive.
 
         ...
@@ -579,7 +582,7 @@ class Schedule:
         -------
         str
             string to be printed
-        '''
+        """
         result = str()
         days = ["----- MONDAY -----", "----- TUESDAY -----", "----- WEDNESDAY -----", "----- THURSDAY -----",
                 "----- FRIDAY -----", "----- SATURDAY -----"]
@@ -596,6 +599,7 @@ class Schedule:
 
         return result
 
+
 SM = Schedule(max_clients_per_training=5, time_slot_num=6)
 SM.generate_random_schedule(greedy=False)
 
@@ -604,22 +608,22 @@ print(SM)
 print('Initial earnings: ', SM.get_cost())
 
 tic = time.time()
-best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=0.99, initial_temp=1000, n_iter_one_temp=10, min_temp=0.1,
-                                                epsilon=0.01, n_iter_without_improvement=10, initial_solution=True)
+best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=0.99, initial_temp=1000, n_iter_one_temp=10,
+                                                           min_temp=0.1,
+                                                           epsilon=0.01, n_iter_without_improvement=10,
+                                                           initial_solution=True)
 toc = time.time()
-
 
 print("\nAFTER OPTIMIZATION")
 print(SM)
 print("Number of iterations: ", num_of_iter)
 print("Best earnings: ", best_cost)
-print("Time: ", toc-tic)
+print("Time: ", toc - tic)
 
 SM.improve_results()
 print("\nIMPROVED SCHEDULE")
 print(SM)
 print("Best improved earnings: ", SM.get_cost())
-
 
 plt.figure()
 plt.plot(all_costs)
