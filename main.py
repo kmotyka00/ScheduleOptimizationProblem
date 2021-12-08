@@ -351,7 +351,7 @@ class Schedule:
         ...
         Parameters
         ----------
-        input_current_solution: np.array
+        current_solution: np.array
             Parameter which contains solution for which we want to find a neighbor.
 
         neighborhood_type_lst: List[str]
@@ -421,6 +421,26 @@ class Schedule:
                     id_most = random.choice(np.argwhere(current_solution[c_most, d_most, :] != None))
                     current_solution[c_most, d_most, id_most], current_solution[c_least, d_least, id_least] \
                         = current_solution[c_least, d_least, id_least], current_solution[c_most, d_most, id_most]
+
+            if neighborhood_type == 'change_instructor':
+                current_solution = current_solution.reshape((-1, 1, 1))
+
+                not_none_id_list = np.argwhere(current_solution != None)
+                random_not_none_id = tuple(random.choice(not_none_id_list))
+
+                type_of_selected_lesson = current_solution[random_not_none_id].lesson_type
+
+                available_instructors = [instructor for instructor in self.instructors if type_of_selected_lesson in
+                                         instructor.qualifications and
+                                         instructor.id != current_solution[random_not_none_id].instructor.id]
+
+                if len(available_instructors) == 0:
+                    new_instructor = current_solution[random_not_none_id].instructor
+                else:
+                    new_instructor = random.choice(available_instructors)
+
+                current_solution[random_not_none_id].instructor = new_instructor
+
 
         current_solution = current_solution.reshape((self.class_id, self.day, self.time_slot))
         return current_solution
@@ -660,24 +680,30 @@ SM.generate_random_schedule(greedy=False)
 print("\nINITIAL SCHEDULE")
 print(SM)
 print('Initial earnings: ', SM.get_cost())
-
+first_cost = SM.get_cost()
 tic = time.time()
 best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=0.99, initial_temp=1000, n_iter_one_temp=10,
                                                            min_temp=0.1,
                                                            epsilon=0.01, n_iter_without_improvement=10,
-                                                           initial_solution=True, neighborhood_type_lst=['move_to_most_busy', 'move_two', 'swap_with_most_busy'])
+                                                           initial_solution=True, neighborhood_type_lst=['change_instructor'])
 toc = time.time()
 
 print("\nAFTER OPTIMIZATION")
 print(SM)
 print("Number of iterations: ", num_of_iter)
+
 print("Best earnings: ", best_cost)
+second_cost = best_cost
 print("Time: ", toc - tic)
 
 SM.improve_results()
 print("\nIMPROVED SCHEDULE")
 print(SM)
 print("Best improved earnings: ", SM.get_cost())
+
+third_cost = SM.get_cost()
+
+print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
 
 plt.figure()
 plt.plot(all_costs)
