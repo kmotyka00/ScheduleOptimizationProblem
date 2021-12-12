@@ -56,8 +56,8 @@ class Optimize(Screen):
         print(self.parameters['n_iter_without_improvement'])
 
     def start_optimization(self):
-        SM = Schedule(client_file=r"C:\Users\kacpe\Desktop\StudiaS5\BO\ScheduleOptimizationProblem\form_answers.csv",
-                      instructor_file=r"C:\Users\kacpe\Desktop\StudiaS5\BO\ScheduleOptimizationProblem\instructors_info.csv",
+        SM = Schedule(client_file=client_file,
+                      instructor_file=instructor_file,
                       max_clients_per_training=5, time_slot_num=6)
         SM.generate_random_schedule(greedy=False)
 
@@ -97,14 +97,33 @@ class Optimize(Screen):
 class LoadFiles(Screen):
     pass
 
+
+client_file = str()
 class ClientFileChooser(Screen):
     def get_path(self):
-        return str(pathlib.Path(__file__).parent.parent.resolve())
+        return str(pathlib.Path(__file__).parent.parent.resolve()) + r'\client_data'
+
+    def selected(self, filename):
+        global client_file
+        try:
+            self.ids.client_path_label.text = filename[0]
+            client_file = filename[0]
+        except:
+            pass
 
 
+instructor_file = str()
 class InstructorFileChooser(Screen):
     def get_path(self):
-        return str(pathlib.Path(__file__).parent.parent.resolve())
+        return str(pathlib.Path(__file__).parent.parent.resolve()) + r'\instructor_data'
+
+    def selected(self, filename):
+        global instructor_file
+        try:
+            self.ids.instructor_path_label.text = filename[0]
+            instructor_file = filename[0]
+        except:
+            pass
 
 class AboutOrganizer(Screen):
     def github_button_on(self):

@@ -359,6 +359,9 @@ WindowManager:
             Button:
                 text: 'Go Back'
                 text_size: self.size
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '30dp'
+                color: '#80ffdb'
                 halign: 'center'
                 valign: 'middle'
                 on_release:
@@ -368,6 +371,9 @@ WindowManager:
             Button:
                 text: 'Start Optimization'
                 text_size: self.size
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '30dp'
+                color: '#80ffdb'
                 halign: 'center'
                 valign: 'middle'
                 on_release:
@@ -378,6 +384,7 @@ WindowManager:
 
 <LoadFiles>:
     name: 'load_files'
+    padding: 50
     BoxLayout:
         orientation: 'vertical'
 
@@ -440,12 +447,26 @@ WindowManager:
                     app.root.current = 'menu'
                     root.manager.transition.direction = 'right'
 
+        BoxLayout:
+            orientation: 'vertical'
+            valign: 'top'
+            size_hint: (1, 0.1)
+
 <ClientFileChooser>:
     name: 'client_chooser'
+    id: client_chooser
+
     BoxLayout:
+        orientation: 'vertical'
+
         FileChooserIconView:
-            id: 'client_file_chooser'
+            id: client_file_chooser
             path: root.get_path()
+            on_selection: client_chooser.selected(client_file_chooser.selection)
+
+        Label:
+            id: client_path_label
+            text: ''
     GridLayout:
         cols: 1
         size_hint: (1, None)
@@ -461,10 +482,20 @@ WindowManager:
 
 <InstructorFileChooser>:
     name: 'instructor_chooser'
+    id: instructor_chooser
+
     BoxLayout:
+        orientation: 'vertical'
+
         FileChooserIconView:
-            id: 'instructor_file_chooser'
+            id: instructor_file_chooser
             path: root.get_path()
+            on_selection: instructor_chooser.selected(instructor_file_chooser.selection)
+
+        Label:
+            id: instructor_path_label
+            text: ''
+
     GridLayout:
         cols: 1
         size_hint: (1, None)
@@ -483,43 +514,37 @@ WindowManager:
 
     GridLayout:
         cols: 1
+        BoxLayout:
+            orientation: 'horizontal'
 
-        GridLayout:
-            cols: 2
 
-            BoxLayout:
-                orientation: 'vertical'
 
-                Label:
-                    text: "Schedule Organizer..."
+            Label:
+                text: """\nSchedule Organizer was created to make most optimal schedule which generates the greatest profits for a company which organizes classes of any type.\n\nTo optimize schedule we used Simulated Annealing (SA) algorithm. It generates random schedule and (in many iterations) searches it's neighbourhood and checks if cost function improves.\n\n\nTo optimize your schedule you should do following steps: \n\n1. Load files. To do this you should click Load Files button in main menu and then find 2 files: first which contains information about classes selected by clients and second which contains information about classes which can be taught by instructor.\n\n2. Set parameters. To do this click Optimize button.\n\n3. Start optimization. When you set all parameters click Start Optimization button below. It will optimize schedule and show it to you."""
 
-                    font_name: 'fonts/Lcd.ttf'
-                    color: '#bdb2ff'
-                    font_size: '25dp'
-                    text_size: self.size
-                    halign: 'left'
-                    valign: 'center'
-                    padding_x: '20dp'
-                    padding_y: '10dp'
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+                padding_x: '20dp'
+                padding_y: '10dp'
 
-                Label:
-                    text: "Schedule Organizer..."
 
-                    font_name: 'fonts/Lcd.ttf'
-                    color: '#bdb2ff'
-                    font_size: '25dp'
-                    text_size: self.size
-                    halign: 'left'
-                    valign: 'center'
-                    padding_x: '20dp'
-                    padding_y: '10dp'
 
 
             BoxLayout:
                 orientation: 'vertical'
+                Label:
+                    text: '\nAfter optimization you will see generated schedule as a matrix of buttons which description contains general information about classes - type of classes, number of attenders etc. You can click at the buttons to check more specific info -list of attenders, instructor name, classroom number.\n\nYou can also move classes if you want. If you do so, program will recalculate cost function.\n\nProgram was written in Python. If you want to see source code you can visit our GitHub repository. To do this, click GitHub icon below.'
+
+                    text_size: self.size
+                    halign: 'left'
+                    valign: 'top'
+                    padding_x: '20dp'
+                    padding_y: '10dp'
 
                 Label:
-                    text: 'Text...'
+                    size_hint: (1, 0.3)
+                    text: 'Created by:\n\n     Kacper Motyka\n     Marek Lechowicz'
                     font_name: 'fonts/Lcd.ttf'
                     color: '#bdb2ff'
                     font_size: '25dp'
@@ -527,7 +552,7 @@ WindowManager:
                     halign: 'left'
                     valign: 'top'
                     padding_x: '20dp'
-                    padding_y: '35dp'
+
 
 
 
