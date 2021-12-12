@@ -1,25 +1,410 @@
 WindowManager:
     MainWindow:
+    Optimize:
+    LoadFiles:
+    AboutOrganizer:
+    SeeSchedule:
 
 <Button>
     font_size: 32
-    font_name: 'fonts/Lcd.ttf'
+    #font_name: 'fonts/Lcd.ttf'
+    font_name: 'fonts/open-sans/OpenSans-Regular.ttf'
     font_size: '40dp'
-    color: 1, .5, 1, 1
+    #color: 1, .5, 1, 1
+    color: 1, 1, 1, 1
 
 <Label>
-    font_size: 32
-    font_name: 'fonts/Lcd.ttf'
+    #font_size: 32
+    #font_name: 'fonts/Lcd.ttf'
+    font_name: 'fonts/open-sans/OpenSans-Regular.ttf'
     font_size: '40dp'
-    color: 1, .5, 1, 1
+    size: self.texture_size
+    #color: 1, .5, 1, 1
+    color: 1, 1, 1, 1
+
+
+
+<MainWindow>:
+    name: 'menu'
+
+    GridLayout:
+
+        #orientation: 'vertical'
+        #size: root.width, root.height
+        cols: 2
+
+        BoxLayout:
+            orientation: 'vertical'
+            Image:
+                source: 'images/schedule-icon.png'
+            Label:
+                text: 'Schedule Organizer'
+                #font_name: 'fonts/Lcd.ttf'
+                #font_size: '40dp'
+                #color: 1, .5, 1, 1
+
+        BoxLayout:
+            orientation: 'vertical'
+
+            Button:
+                text: 'Optimize'
+                on_release:
+                    app.root.current = 'optimize'
+                    root.manager.transition.direction = 'left'
+
+            Button:
+                text: 'Load Files'
+                on_release:
+                    app.root.current = 'load_files'
+                    root.manager.transition.direction = 'left'
+
+
+            Button:
+                text: 'About Organizer'
+                on_release:
+                    app.root.current = 'about_organizer'
+                    root.manager.transition.direction = 'left'
+
+            Button:
+                text: 'See Schedule'
+                on_release:
+                    app.root.current = 'see_schedule'
+                    root.manager.transition.direction = 'left'
+
+            Button:
+                id: btnExit
+                text: 'Exit'
+                on_press: app.stop()
 
 
 <Optimize>:
     name: 'optimize'
-    GridLayout:
-        cols: 2
 
-        Label:
-            text: 'Method of choosing neighborhood'
+
+    GridLayout:
+        cols: 1
+
         GridLayout:
-            
+            padding: 20
+            cols: 1
+
+            BoxLayout:
+                id: 'alpha'
+                orientation: "horizontal"
+                size_hint: 1, 0.2
+                spacing: 30
+
+                Label:
+                    size_hint: 0.1, 1
+                    pos_hint: {"x": 0, "center_y":0.5}
+                    text: 'Alpha:'
+                    font_size: self.width/6
+                    text_size: self.size
+                    halign: 'right'
+                    valign: 'middle'
+
+                TextInput:
+                    id: input_alpha
+                    size_hint: 0.05, 0.35
+                    pos_hint: {"x": 0.2, "center_y":0.5}
+                    # text: str(format(root.parameters['alpha'], '.3f')) ciekawe czemu tak się nie aktualizuje
+                    text: str(format(slider_alpha.value, '.3f'))
+                    text_size: self.size
+                    font_size: self.width/4
+                    halign: "center"
+                    multiline: False
+                    on_text:
+                        root.on_text(parameter='alpha', input_parameter=root.ids.input_alpha.text)
+                        # root.ids.slider_alpha.value = root.parameters['alpha'] tutaj też dziwne rzeczy się dzieją
+
+                Slider:
+                    id: slider_alpha
+                    size_hint: 0.3, 1
+                    #pos_hint: {"x": 0.4, "center_y":0.5}
+                    min: 0
+                    max: 1
+                    step: 0.001
+                    orientation: 'horizontal'
+                    halign: "right"
+                    value: root.parameters['alpha']
+                    on_value:
+                        root.parameters['alpha'] = self.value
+
+
+            GridLayout:
+                size_hint: 1, 0.6
+                padding: 20
+                spacing: 20
+                cols: 3
+                rows: 2
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint: 1, 0.2
+                    spacing: 10
+
+                    Label:
+                        # size_hint: 0.5, 1
+                        # pos_hint: {"x": 1, "y": 0.5}
+                        text: 'Initial temp:'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+
+                    TextInput:
+                        id: input_initial_temp
+                        size_hint: 0.5, 0.35
+                        pos_hint: {"center_y": 0.5}
+                        text: str(format(root.parameters['initial_temp'], '.0f'))
+                        text_size: self.size
+                        font_size: self.width/4
+                        halign: "center"
+                        multiline: False
+                        on_text:
+                            root.on_text(parameter='initial_temp', input_parameter=root.ids.input_initial_temp.text)
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint: 1, 0.2
+                    spacing: 10
+
+                    Label:
+                        # size_hint: 0.5, 1
+                        # pos_hint: {"x": 0, "center_y":0.5}
+                        text: 'No. of iterations in one temp.:'
+                        font_size: self.width/8
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+                    TextInput:
+                        id: input_n_iter_one_temp
+                        size_hint: 0.5, 0.35
+                        pos_hint: {"center_y": 0.5}
+                        text: str(format(root.parameters['n_iter_one_temp'], '.3f'))
+                        text_size: self.size
+                        font_size: self.width/4
+                        halign: "center"
+                        multiline: False
+                        on_text:
+                            root.on_text(parameter='n_iter_one_temp', input_parameter=root.ids.input_n_iter_one_temp.text)
+
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint: 1, 0.2
+                    spacing: 10
+
+                    Label:
+                        # size_hint: 0.5, 1
+                        # pos_hint: {"x": 0, "center_y":0.5}
+                        text: 'Epsilon:'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+                    TextInput:
+                        id: input_epsilon
+                        size_hint: 0.5, 0.35
+                        pos_hint: {"center_y": 0.5}
+                        text: str(format(root.parameters['epsilon'], '.3f'))
+                        text_size: self.size
+                        font_size: self.width/4
+                        halign: "center"
+                        multiline: False
+                        on_text:
+                            root.on_text(parameter='epsilon', input_parameter=root.ids.input_epsilon.text)
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint: 1, 0.2
+                    spacing: 10
+
+                    Label:
+                        # size_hint: 0.5, 1
+                        # pos_hint: {"x": 0, "center_y":0.5}
+                        text: 'Minimal temp:'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+                    TextInput:
+                        id: input_min_temp
+                        size_hint: 0.5, 0.35
+                        pos_hint: {"center_y": 0.5}
+                        text: str(root.parameters['min_temp'])
+                        text_size: self.size
+                        font_size: self.width/4
+                        halign: "center"
+                        multiline: False
+                        on_text:
+                            root.on_text(parameter='min_temp', input_parameter=root.ids.input_min_temp.text)
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint: 1, 0.2
+                    spacing: 10
+
+                    Label:
+                        # size_hint: 0.5, 1
+                        # pos_hint: {"x": 0, "center_y":0.5}
+                        text: 'No. of iterations without improvement:'
+                        font_size: self.width/8
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+                    TextInput:
+                        id: input_n_iter_without_improvement
+                        size_hint: 0.5, 0.35
+                        pos_hint: {"center_y": 0.5}
+                        text: str(format(root.parameters['n_iter_without_improvement'], '.0f'))
+                        text_size: self.size
+                        font_size: self.width/4
+                        halign: "center"
+                        multiline: False
+                        on_text:
+                            root.on_text(parameter='n_iter_without_improvement', input_parameter=root.ids.input_n_iter_without_improvement.text)
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint: 1, 0.2
+                    spacing: 10
+
+                    Label:
+                        # size_hint: 0.5, 1
+                        # pos_hint: {"x": 0, "center_y":0.5}
+                        text: 'Initial solution:'
+                        font_size: self.width/5
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+                    CheckBox:
+                        on_active: root.parameters['initial_solution'] = True
+
+
+            BoxLayout:
+                id: neighborhood
+                orientation: 'horizontal'
+                size_hint: 1, 0.2
+                Label:
+                    size_hint: 0.3, 1
+                    font_size: self.width/16
+                    text: 'Method of choosing neighborhood:'
+
+
+                BoxLayout:
+                    size_hint: 0.7, 1
+                    orientation: 'horizontal'
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: 20
+                        Label:
+                            font_size: self.width/8
+                            text: 'Move one'
+                        CheckBox:
+                            on_active: root.checkbox_click(self, self.active, 'move_one')
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: 20
+                        Label:
+                            font_size: self.width/8
+                            text: 'Move two'
+                        CheckBox:
+                            on_active: root.checkbox_click(self, self.active, 'move_two')
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: 30
+                        Label:
+                            font_size: self.width/8
+                            text: 'Move to \nmost busy'
+                        CheckBox:
+                            on_active: root.checkbox_click(self, self.active, 'move_to_most_busy')
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: 30
+                        Label:
+                            font_size: self.width/8
+                            text: 'Swap with \nmost busy'
+                        CheckBox:
+                            on_active: root.checkbox_click(self, self.active, 'swap_with_most_busy')
+
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: 30
+                        Label:
+                            font_size: self.width/8
+                            text: 'Change instructor'
+
+                        CheckBox:
+                            on_active: root.checkbox_click(self, self.active, 'change_instructor')
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1, 0.2)
+
+            Button:
+                text: 'Go Back'
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                on_release:
+                    app.root.current = 'menu'
+                    root.manager.transition.direction = 'right'
+
+            Button:
+                text: 'Start Optimization'
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                on_release:
+                    root.start_optimization()
+
+
+
+<LoadFiles>:
+    name: 'load_files'
+    GridLayout:
+        cols: 1
+        size_hint: (1, None)
+        height: '100dp'
+        Button:
+            text: 'Go Back'
+            on_release:
+                app.root.current = 'menu'
+                root.manager.transition.direction = 'right'
+
+
+<AboutOrganizer>:
+    name: 'about_organizer'
+    GridLayout:
+        cols: 1
+        size_hint: (1, None)
+        height: '100dp'
+        Button:
+            text: 'Go Back'
+            on_release:
+                app.root.current = 'menu'
+                root.manager.transition.direction = 'right'
+
+
+<SeeSchedule>
+    name: 'see_schedule'
+    GridLayout:
+        cols: 1
+        size_hint: (1, None)
+        height: '100dp'
+        Button:
+            text: 'Go Back'
+            on_release:
+                app.root.current = 'menu'
+                root.manager.transition.direction = 'right'

@@ -13,18 +13,88 @@ import kivy.clock
 
 import webbrowser
 import threading
+from schedule import Schedule
+import time
 
 
-class Optimize(Widget):
-    neighborhood_type_lst = list()
+
+class MainWindow(Screen):
+    pass
+
+class Optimize(Screen):
+    # TODO: co prodram ma zrobić po skończeniu optymalizacji
+    # TODO: ładowanie plików
+    # TODO: usunąć wywoływanie opt. w schedule.py
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.parameters = {
+            'neighborhood_type_lst': list(),
+            'initial_solution': False,
+            'alpha': 0.99,
+            'initial_temp': 100,
+            'n_iter_one_temp': 50,
+            'min_temp': 0.1,
+            'epsilon': 0.01,
+            'n_iter_without_improvement': 1000}
 
     def checkbox_click(self, instance, value, neighborhood_type):
         if value is True:
-            Optimize.neighborhood_type_lst.append(neighborhood_type)
+            self.parameters['neighborhood_type_lst'].append(neighborhood_type)
         else:
-            Optimize.neighborhood_type_lst.remove(neighborhood_type)
+            self.parameters['neighborhood_type_lst'].remove(neighborhood_type)
 
-class MainWindow(Screen):
+
+    def on_text(self, parameter, input_parameter):
+        try:
+            self.parameters[parameter] = int(input_parameter)
+        except ValueError:
+            self.parameters[parameter] = 0
+        print(self.parameters['n_iter_without_improvement'])
+
+    def start_optimization(self):
+        SM = Schedule(max_clients_per_training=5, time_slot_num=6)
+        SM.generate_random_schedule(greedy=False)
+
+        print("\nINITIAL SCHEDULE")
+        print(SM)
+        print('Initial earnings: ', SM.get_cost())
+        first_cost = SM.get_cost()
+        tic = time.time()
+
+        best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=self.parameters['alpha'],
+                                                                   initial_temp=self.parameters['initial_temp'],
+                                                                   n_iter_one_temp=self.parameters['n_iter_one_temp'],
+                                                                   min_temp=self.parameters['min_temp'],
+                                                                   epsilon=self.parameters['epsilon'],
+                                                                   n_iter_without_improvement=self.parameters['n_iter_without_improvement'],
+                                                                   initial_solution=self.parameters['initial_solution'],
+                                                                   neighborhood_type_lst=self.parameters['neighborhood_type_lst'])
+        toc = time.time()
+
+        print("\nAFTER OPTIMIZATION")
+        print(SM)
+        print("Number of iterations: ", num_of_iter)
+
+        print("Best earnings: ", best_cost)
+        second_cost = best_cost
+        print("Time: ", toc - tic)
+
+        SM.improve_results()
+        print("\nIMPROVED SCHEDULE")
+        print(SM)
+        print("Best improved earnings: ", SM.get_cost())
+
+        third_cost = SM.get_cost()
+
+        print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
+
+class LoadFiles(Screen):
+    pass
+
+class AboutOrganizer(Screen):
+    pass
+
+class SeeSchedule(Screen):
     pass
 
 class WindowManager(ScreenManager):

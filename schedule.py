@@ -204,7 +204,7 @@ class Schedule:
         Helps to print a current schedule preety and intuitive
     """
 
-    def __init__(self, client_file: str = 'form_answers.csv', instructor_file: str = 'instructors_info.csv',
+    def __init__(self, client_file: str = 'D:/studia_zadania/BO2/ScheduleOptimizationProblem/form_answers.csv', instructor_file: str = 'D:/studia_zadania/BO2/ScheduleOptimizationProblem/instructors_info.csv',
                  class_num=1, day_num=6, time_slot_num=6, max_clients_per_training=5,
                  ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=200):
         self.class_id = class_num
