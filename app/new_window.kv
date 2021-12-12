@@ -4,26 +4,16 @@ WindowManager:
     LoadFiles:
     AboutOrganizer:
     SeeSchedule:
+    ClientFileChooser:
+    InstructorFileChooser:
 
-
-<Button>
-    font_size: 32
-    font_name: 'fonts/Lcd.ttf'
-    font_size: '40dp'
-    color: 1, .5, 1, 1
-
-<Label>
-    font_size: 32
-    font_name: 'fonts/Lcd.ttf'
-    font_size: '40dp'
-    color: 1, .5, 1, 1
 
 <MainWindow>:
     name: 'menu'
 
-    GridLayout:
+    BoxLayout:
 
-        #orientation: 'vertical'
+        orientation: 'horizontal'
         #size: root.width, root.height
         cols: 2
 
@@ -35,19 +25,27 @@ WindowManager:
                 text: 'Schedule Organizer'
                 font_name: 'fonts/Lcd.ttf'
                 font_size: '40dp'
-                color: 1, .5, 1, 1
+                color: '#80ffdb'
+
+
 
         BoxLayout:
             orientation: 'vertical'
 
             Button:
                 text: 'Optimize'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
                 on_release:
                     app.root.current = 'optimize'
                     root.manager.transition.direction = 'left'
 
             Button:
                 text: 'Load Files'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
                 on_release:
                     app.root.current = 'load_files'
                     root.manager.transition.direction = 'left'
@@ -55,12 +53,18 @@ WindowManager:
 
             Button:
                 text: 'About Organizer'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
                 on_release:
                     app.root.current = 'about_organizer'
                     root.manager.transition.direction = 'left'
 
             Button:
                 text: 'See Schedule'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
                 on_release:
                     app.root.current = 'see_schedule'
                     root.manager.transition.direction = 'left'
@@ -68,6 +72,9 @@ WindowManager:
             Button:
                 id: btnExit
                 text: 'Exit'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
                 on_press: app.stop()
 
 
@@ -79,34 +86,198 @@ WindowManager:
         height: '100dp'
         Button:
             text: 'Go Back'
+            font_name: 'fonts/Lcd.ttf'
+            font_size: '40dp'
+            color: '#80ffdb'
             on_release:
                 app.root.current = 'menu'
                 root.manager.transition.direction = 'right'
 
 <LoadFiles>:
     name: 'load_files'
+    BoxLayout:
+        orientation: 'vertical'
+
+        BoxLayout:
+            orientation: 'vertical'
+            valign: 'top'
+            size_hint: (1, 0.3)
+            Label:
+                text_size: self.size
+                halign: 'center'
+                valign: 'top'
+                padding_x: '20dp'
+                padding_y: '20dp'
+
+                text: 'Here you can choose files which contain information about clients and instructors'
+                color: '#80ffdb'
+                font_size: '40dp'
+                font_name: 'fonts/Lcd.ttf'
+
+        BoxLayout:
+
+            orientation: 'vertical'
+            spacing: 50
+            size_hint: (0.8, 0.8)
+            pos_hint: {'center_x': 0.5, 'center_y': 1}
+            Button:
+
+
+                text: 'Choose client file'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
+
+                on_release:
+                    app.root.current = 'client_chooser'
+                    root.manager.transition.direction = 'left'
+
+
+            Button:
+
+                text: 'Choose instructor file'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
+
+
+                on_release:
+                    app.root.current = 'instructor_chooser'
+                    root.manager.transition.direction = 'left'
+
+
+
+            Button:
+                text: 'Go Back'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
+                size_hint: (1, 1)
+                on_release:
+                    app.root.current = 'menu'
+                    root.manager.transition.direction = 'right'
+
+<ClientFileChooser>:
+    name: 'client_chooser'
+    BoxLayout:
+        FileChooserIconView:
+            id: 'client_file_chooser'
+            path: root.get_path()
     GridLayout:
         cols: 1
         size_hint: (1, None)
         height: '100dp'
         Button:
             text: 'Go Back'
+            font_name: 'fonts/Lcd.ttf'
+            font_size: '40dp'
+            color: '#80ffdb'
             on_release:
-                app.root.current = 'menu'
+                app.root.current = 'load_files'
                 root.manager.transition.direction = 'right'
 
+<InstructorFileChooser>:
+    name: 'instructor_chooser'
+    BoxLayout:
+        FileChooserIconView:
+            id: 'instructor_file_chooser'
+            path: root.get_path()
+    GridLayout:
+        cols: 1
+        size_hint: (1, None)
+        height: '100dp'
+        Button:
+            text: 'Go Back'
+            font_name: 'fonts/Lcd.ttf'
+            font_size: '40dp'
+            color: '#80ffdb'
+            on_release:
+                app.root.current = 'load_files'
+                root.manager.transition.direction = 'right'
 
 <AboutOrganizer>:
     name: 'about_organizer'
+
     GridLayout:
         cols: 1
-        size_hint: (1, None)
-        height: '100dp'
-        Button:
-            text: 'Go Back'
-            on_release:
-                app.root.current = 'menu'
-                root.manager.transition.direction = 'right'
+
+        GridLayout:
+            cols: 2
+
+            BoxLayout:
+                orientation: 'vertical'
+
+                Label:
+                    text: "Schedule Organizer..."
+
+                    font_name: 'fonts/Lcd.ttf'
+                    color: '#bdb2ff'
+                    font_size: '25dp'
+                    text_size: self.size
+                    halign: 'left'
+                    valign: 'center'
+                    padding_x: '20dp'
+                    padding_y: '10dp'
+
+                Label:
+                    text: "Schedule Organizer..."
+
+                    font_name: 'fonts/Lcd.ttf'
+                    color: '#bdb2ff'
+                    font_size: '25dp'
+                    text_size: self.size
+                    halign: 'left'
+                    valign: 'center'
+                    padding_x: '20dp'
+                    padding_y: '10dp'
+
+
+            BoxLayout:
+                orientation: 'vertical'
+
+                Label:
+                    text: 'Text...'
+                    font_name: 'fonts/Lcd.ttf'
+                    color: '#bdb2ff'
+                    font_size: '25dp'
+                    text_size: self.size
+                    halign: 'left'
+                    valign: 'top'
+                    padding_x: '20dp'
+                    padding_y: '35dp'
+
+
+
+                Button:
+                    id: github_button
+                    background_normal: 'images/GitHub-Mark-Light-120px-plus.png'
+                    background_color: 0,0,0,0
+                    pos_hint: {'x': 0.5, 'center_y': 0.8}
+                    size_hint: (0.3, 0.3)
+
+                    on_press:
+                        root.github_button_on()
+
+                    on_release:
+                        root.github_button_off()
+
+                    Image:
+                        id: github_button_img
+                        source: 'images/GitHub-Mark-Light-120px-plus.png'
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+        GridLayout:
+            cols: 1
+            size_hint: (1, None)
+            height: '100dp'
+            Button:
+                text: 'Go Back'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
+                on_release:
+                    app.root.current = 'menu'
+                    root.manager.transition.direction = 'right'
 
 
 <SeeSchedule>
@@ -117,6 +288,9 @@ WindowManager:
         height: '100dp'
         Button:
             text: 'Go Back'
+            font_name: 'fonts/Lcd.ttf'
+            font_size: '40dp'
+            color: '#80ffdb'
             on_release:
                 app.root.current = 'menu'
                 root.manager.transition.direction = 'right'

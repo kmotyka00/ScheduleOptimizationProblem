@@ -12,7 +12,7 @@ from kivy.properties import ObjectProperty
 import kivy.clock
 
 import webbrowser
-import threading
+import pathlib
 
 class MainWindow(Screen):
     pass
@@ -23,8 +23,22 @@ class Optimize(Screen):
 class LoadFiles(Screen):
     pass
 
+class ClientFileChooser(Screen):
+    def get_path(self):
+        return str(pathlib.Path(__file__).parent.parent.resolve())
+
+
+class InstructorFileChooser(Screen):
+    def get_path(self):
+        return str(pathlib.Path(__file__).parent.parent.resolve())
+
 class AboutOrganizer(Screen):
-    pass
+    def github_button_on(self):
+        self.ids.github_button_img.source = 'images/GitHub-Mark-Light-120px-plus_pressed.png'
+
+    def github_button_off(self):
+        self.ids.github_button_img.source = 'images/GitHub-Mark-Light-120px-plus.png'
+        webbrowser.open('https://github.com/kmotyka00/ScheduleOptimizationProblem')
 
 class SeeSchedule(Screen):
     pass
