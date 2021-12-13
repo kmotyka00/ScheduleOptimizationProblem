@@ -68,8 +68,8 @@ WindowManager:
                 font_size: '40dp'
                 color: '#80ffdb'
                 on_release:
-                    root.update_schedule_description()
                     root.manager.get_screen('see_schedule').generate_schedule_layout()
+                    root.update_schedule_description()
                     app.root.current = 'see_schedule'
                     root.manager.transition.direction = 'left'
 
@@ -596,8 +596,20 @@ WindowManager:
     GridLayout:
         cols: 1
         GridLayout:
-            id: schedule_layout
-            cols: 6
+            rows: 2
+            GridLayout:
+                id: days_layout
+                size_hint: 1, 0.14
+                cols: 7
+
+            GridLayout:
+                GridLayout:
+                    id: hours_layout
+                    rows: 6
+
+                GridLayout:
+                    id: schedule_layout
+                    cols: 6
 
 
         Button:

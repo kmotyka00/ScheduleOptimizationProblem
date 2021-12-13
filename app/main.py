@@ -51,25 +51,36 @@ class MainWindow(Screen):
     my_popup.content = popup_content
 
     def update_schedule_description(self):
+        # TODO zmienić 36, na coś wczytanego
         # try:
         global schedule_global
-        lista = [time_slot[0, 0].lesson_type for time_slot in schedule_global.schedule.reshape(-1, 1, 1)]
-        SeeSchedule.time_slots = lista
-        print(SeeSchedule.time_slots)
+        temp_schedule = schedule_global.schedule.T.reshape(-1, 1, 1).squeeze()
+        for time_slot in range(36):
+            lesson = temp_schedule[time_slot]
+            if lesson != None:
+                # Read lesson_type and convert it to user friendly string
+                new_text = f'{lesson.lesson_type}'.split('.')[1].split('_')
+                converted_text = str()
+                for i in range(len(new_text)):
+                    converted_text += new_text[i] + ' '
+                self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].text = converted_text
+            else:
+                self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].text = 'Free'
         # except AttributeError:
         #     MainWindow.my_popup.open()
 
 
+
+
 class Optimize(Screen):
     # TODO: co prodram ma zrobić po skończeniu optymalizacji
-    # TODO: ładowanie plików
     # TODO: usunąć wywoływanie opt. w schedule.py
     def __init__(self, **kw):
         super().__init__(**kw)
         self.parameters = {
             'neighborhood_type_lst': list(),
             'initial_solution': False,
-            'alpha': 0.99,
+            'alpha': 0.5,
             'initial_temp': 100,
             'n_iter_one_temp': 50,
             'min_temp': 0.1,
@@ -88,7 +99,6 @@ class Optimize(Screen):
             self.parameters[parameter] = int(input_parameter)
         except ValueError:
             self.parameters[parameter] = 0
-        print(self.parameters['n_iter_without_improvement'])
 
     def start_optimization(self):
         SM = Schedule(client_file=client_file,
@@ -169,12 +179,39 @@ class AboutOrganizer(Screen):
         webbrowser.open('https://github.com/kmotyka00/ScheduleOptimizationProblem')
 
 
+# Functions to enable assignment
+# self.font_size: self.width / 8
+def set_font_size(instance, value):
+    instance.font_size = value / 8
+# self.text_size: self.size
+def set_text_size(instance, value):
+    instance.text_size = value
+
 class SeeSchedule(Screen):
-    time_slots = [None for i in range(36)]
+    #TODO zmienić 36, na coś wczytanego
+
     def generate_schedule_layout(self):
-        global schedule_global
-        for time_slot in SeeSchedule.time_slots:
-            self.ids.schedule_layout.add_widget(Button(text=f'{time_slot}'))
+        for time_slot in range(36):
+            if f'Button{time_slot}' not in self.ids.keys():
+                button = Button(text=f'{None}', halign='center', valign='center')
+                # self.font_size: self.width / 8
+                button.bind(width=set_font_size)
+                # self.text_size: self.size
+                button.bind(size=set_text_size)
+                self.ids.schedule_layout.add_widget(button)
+                self.ids[f'Button{time_slot}'] = button
+
+    def genrate_hours_layout(self):
+        for time_slot in range(36):
+            if f'Button{time_slot}' not in self.ids.keys():
+                button = Button(text=f'{None}', halign='center', valign='center')
+                # self.font_size: self.width / 8
+                button.bind(width=set_font_size)
+                # self.text_size: self.size
+                button.bind(size=set_text_size)
+                self.ids.schedule_layout.add_widget(button)
+                self.ids[f'Button{time_slot}'] = button
+
 
 class WindowManager(ScreenManager):
     pass
