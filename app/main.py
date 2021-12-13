@@ -93,7 +93,14 @@ class Optimize(Screen):
     def start_optimization(self):
         SM = Schedule(client_file=client_file,
                       instructor_file=instructor_file,
-                      max_clients_per_training=5, time_slot_num=6)
+                      class_num=ScheduleParameters.schedule_parameters['class_num'],
+                      day_num=ScheduleParameters.schedule_parameters['day_num'],
+                      time_slot_num=ScheduleParameters.schedule_parameters['time_slot_num'],
+                      max_clients_per_training=ScheduleParameters.schedule_parameters['max_clients_per_training'],
+                      ticket_cost=ScheduleParameters.schedule_parameters['ticket_cost'],
+                      hour_pay=ScheduleParameters.schedule_parameters['hour_pay'],
+                      pay_for_presence=ScheduleParameters.schedule_parameters['pay_for_presence'],
+                      class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'])
 
         print("\nINITIAL SCHEDULE")
         print(SM)
@@ -134,7 +141,6 @@ class LoadFiles(Screen):
     pass
 
 
-
 class ClientFileChooser(Screen):
     def get_path(self):
         return str(pathlib.Path(__file__).parent.parent.resolve()) + r'\client_data'
@@ -159,6 +165,26 @@ class InstructorFileChooser(Screen):
             instructor_file = filename[0]
         except:
             pass
+
+
+class ScheduleParameters(Screen):
+
+    schedule_parameters = {
+        'class_num': 1,
+        'day_num': 6,
+        'time_slot_num': 6,
+        'max_clients_per_training': 5,
+        'ticket_cost': 40,
+        'hour_pay': 50,
+        'pay_for_presence': 0.01,
+        'class_renting_cost': 200}
+
+    def on_text(self, parameter, input_parameter):
+        try:
+            ScheduleParameters.schedule_parameters[parameter] = int(input_parameter)
+        except ValueError:
+            ScheduleParameters.schedule_parameters[parameter] = 0
+        print(ScheduleParameters.schedule_parameters['ticket_cost'])
 
 class AboutOrganizer(Screen):
     def github_button_on(self):

@@ -6,6 +6,7 @@ WindowManager:
     SeeSchedule:
     ClientFileChooser:
     InstructorFileChooser:
+    ScheduleParameters:
 
 
 
@@ -412,6 +413,19 @@ WindowManager:
             spacing: 50
             size_hint: (0.8, 0.8)
             pos_hint: {'center_x': 0.5, 'center_y': 1}
+
+            Button:
+
+                text: 'Set schedule parameters'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
+
+
+                on_release:
+                    app.root.current = 'schedule_parameters'
+                    root.manager.transition.direction = 'left'
+
             Button:
 
 
@@ -510,6 +524,285 @@ WindowManager:
             on_release:
                 app.root.current = 'load_files'
                 root.manager.transition.direction = 'right'
+
+
+<ScheduleParameters>:
+    name: 'schedule_parameters'
+    id: schedule_parameters
+
+    GridLayout:
+        cols: 1
+
+        Label:
+            size_hint: (1, 0.1)
+            text: 'Set schedule parameters'
+            font_name: 'fonts/Lcd.ttf'
+            font_size: '40dp'
+            color: '#80ffdb'
+
+        GridLayout:
+            size_hint: 1, 0.8
+            padding: 20
+            spacing: 20
+            cols: 2
+            rows: 4
+
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, 0.2
+                spacing: 15
+
+                Label:
+                    text: 'Number of classrooms:'
+                    font_size: self.width/8
+                    text_size: self.size
+                    halign: 'right'
+                    valign: 'middle'
+
+
+                TextInput:
+                    id: class_num
+                    size_hint: 0.5, 0.5
+                    pos_hint: {"center_y": 0.5}
+                    text: str(format(root.schedule_parameters['class_num'], '.0f'))
+                    text_size: self.size
+                    background_color: (0, 0, 0, 0)
+                    cursor_color: (1, 1, 1, 1)
+                    disabled_foreground_color: (1, 1, 1, 1)
+                    foreground_color: (1, 1, 1, 1)
+                    font_size: self.width/4
+                    halign: "center"
+                    multiline: False
+                    on_text:
+                        root.on_text(parameter='class_num', input_parameter=root.ids.class_num.text)
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, 0.2
+                spacing: 15
+
+                Label:
+                    text: 'Days number:'
+                    font_size: self.width/8
+                    text_size: self.size
+                    halign: 'right'
+                    valign: 'middle'
+
+
+                TextInput:
+                    id: day_num
+                    size_hint: 0.5, 0.5
+                    pos_hint: {"center_y": 0.5}
+                    text: str(format(root.schedule_parameters['day_num'], '.0f'))
+                    text_size: self.size
+                    background_color: (0, 0, 0, 0)
+                    cursor_color: (1, 1, 1, 1)
+                    disabled_foreground_color: (1, 1, 1, 1)
+                    foreground_color: (1, 1, 1, 1)
+                    font_size: self.width/4
+                    halign: "center"
+                    multiline: False
+                    on_text:
+                        root.on_text(parameter='day_num', input_parameter=root.ids.day_num.text)
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, 0.2
+                spacing: 15
+
+                Label:
+                    text: 'Timeslots number:'
+                    font_size: self.width/8
+                    text_size: self.size
+                    halign: 'right'
+                    valign: 'middle'
+
+
+                TextInput:
+                    id: time_slot_num
+                    size_hint: 0.5, 0.5
+                    pos_hint: {"center_y": 0.5}
+                    text: str(format(root.schedule_parameters['time_slot_num'], '.0f'))
+                    text_size: self.size
+                    background_color: (0, 0, 0, 0)
+                    cursor_color: (1, 1, 1, 1)
+                    disabled_foreground_color: (1, 1, 1, 1)
+                    foreground_color: (1, 1, 1, 1)
+                    font_size: self.width/4
+                    halign: "center"
+                    multiline: False
+                    on_text:
+                        root.on_text(parameter='time_slot_num', input_parameter=root.ids.time_slot_num.text)
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, 0.2
+                spacing: 15
+
+                Label:
+                    text: 'Max client:'
+                    font_size: self.width/8
+                    text_size: self.size
+                    halign: 'right'
+                    valign: 'middle'
+
+
+                TextInput:
+                    id: max_clients_per_training
+                    size_hint: 0.5, 0.5
+                    pos_hint: {"center_y": 0.5}
+                    text: str(format(root.schedule_parameters['max_clients_per_training'], '.0f'))
+                    text_size: self.size
+                    background_color: (0, 0, 0, 0)
+                    cursor_color: (1, 1, 1, 1)
+                    disabled_foreground_color: (1, 1, 1, 1)
+                    foreground_color: (1, 1, 1, 1)
+                    font_size: self.width/4
+                    halign: "center"
+                    multiline: False
+                    on_text:
+                        root.on_text(parameter='max_clients_per_training', input_parameter=root.ids.max_clients_per_training.text)
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, 0.2
+                spacing: 15
+
+                Label:
+                    text: 'Ticket cost:'
+                    font_size: self.width/8
+                    text_size: self.size
+                    halign: 'right'
+                    valign: 'middle'
+
+
+                TextInput:
+                    id: ticket_cost
+                    size_hint: 0.5, 0.5
+                    pos_hint: {"center_y": 0.5}
+                    text: str(format(root.schedule_parameters['ticket_cost'], '.0f'))
+                    text_size: self.size
+                    background_color: (0, 0, 0, 0)
+                    cursor_color: (1, 1, 1, 1)
+                    disabled_foreground_color: (1, 1, 1, 1)
+                    foreground_color: (1, 1, 1, 1)
+                    font_size: self.width/4
+                    halign: "center"
+                    multiline: False
+                    on_text:
+                        root.on_text(parameter='ticket_cost', input_parameter=root.ids.ticket_cost.text)
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, 0.2
+                spacing: 15
+
+                Label:
+                    text: 'Hour pay:'
+                    font_size: self.width/8
+                    text_size: self.size
+                    halign: 'right'
+                    valign: 'middle'
+
+
+                TextInput:
+                    id: hour_pay
+                    size_hint: 0.5, 0.5
+                    pos_hint: {"center_y": 0.5}
+                    text: str(format(root.schedule_parameters['hour_pay'], '.0f'))
+                    text_size: self.size
+                    background_color: (0, 0, 0, 0)
+                    cursor_color: (1, 1, 1, 1)
+                    disabled_foreground_color: (1, 1, 1, 1)
+                    foreground_color: (1, 1, 1, 1)
+                    font_size: self.width/4
+                    halign: "center"
+                    multiline: False
+                    on_text:
+                        root.on_text(parameter='hour_pay', input_parameter=root.ids.hour_pay.text)
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, 0.2
+                spacing: 15
+
+                Label:
+                    text: 'Presence pay:'
+                    font_size: self.width/8
+                    text_size: self.size
+                    halign: 'right'
+                    valign: 'middle'
+
+
+                TextInput:
+                    id: pay_for_presence
+                    size_hint: 0.5, 0.5
+                    pos_hint: {"center_y": 0.5}
+                    text: str(format(root.schedule_parameters['pay_for_presence'], '.0f'))
+                    text_size: self.size
+                    background_color: (0, 0, 0, 0)
+                    cursor_color: (1, 1, 1, 1)
+                    disabled_foreground_color: (1, 1, 1, 1)
+                    foreground_color: (1, 1, 1, 1)
+                    font_size: self.width/4
+                    halign: "center"
+                    multiline: False
+                    on_text:
+                        root.on_text(parameter='pay_for_presence', input_parameter=root.ids.pay_for_presence.text)
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1, 0.2
+                spacing: 15
+
+                Label:
+                    text: 'Class cost:'
+                    font_size: self.width/8
+                    text_size: self.size
+                    halign: 'right'
+                    valign: 'middle'
+
+
+                TextInput:
+                    id: class_renting_cost
+                    size_hint: 0.5, 0.5
+                    pos_hint: {"center_y": 0.5}
+                    text: str(format(root.schedule_parameters['class_renting_cost'], '.0f'))
+                    text_size: self.size
+                    background_color: (0, 0, 0, 0)
+                    cursor_color: (1, 1, 1, 1)
+                    disabled_foreground_color: (1, 1, 1, 1)
+                    foreground_color: (1, 1, 1, 1)
+                    font_size: self.width/4
+                    halign: "center"
+                    multiline: False
+                    on_text:
+                        root.on_text(parameter='class_renting_cost', input_parameter=root.ids.class_renting_cost.text)
+
+
+
+
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1, 0.15)
+
+            Button:
+                text: 'Go Back'
+                text_size: self.size
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '30dp'
+                color: '#80ffdb'
+                halign: 'center'
+                valign: 'middle'
+                on_release:
+                    app.root.current = 'menu'
+                    root.manager.transition.direction = 'right'
+
+
+
+
 
 <AboutOrganizer>:
     name: 'about_organizer'
