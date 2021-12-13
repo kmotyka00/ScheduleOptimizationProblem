@@ -712,6 +712,7 @@ class Schedule:
 # plt.ylabel('Earnings [$]')
 # plt.show()
 
+
 #  TODO: - zwiększyć liczbę classroomów
 #  TODO: - poprawienie rozwiązania podczas działania algorytmu SA (przenoszenie względem prowadzących)
 #  TODO: - dodanie listy kompetencji i mniej losowe przydzielanie prowadzących do zajęć (może jako prawdopodobieństwo)

@@ -68,6 +68,8 @@ WindowManager:
                 font_size: '40dp'
                 color: '#80ffdb'
                 on_release:
+                    root.update_schedule_description()
+                    root.manager.get_screen('see_schedule').generate_schedule_layout()
                     app.root.current = 'see_schedule'
                     root.manager.transition.direction = 'left'
 
@@ -588,16 +590,21 @@ WindowManager:
                     root.manager.transition.direction = 'right'
 
 
-<SeeSchedule>
+<SeeSchedule>:
     name: 'see_schedule'
+    id: see_schedule
     GridLayout:
         cols: 1
-        size_hint: (1, None)
-        height: '100dp'
+        GridLayout:
+            id: schedule_layout
+            cols: 6
+
+
         Button:
             text: 'Go Back'
             font_name: 'fonts/Lcd.ttf'
             font_size: '40dp'
+            size_hint: (1, 0.1)
             color: '#80ffdb'
             on_release:
                 app.root.current = 'menu'

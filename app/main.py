@@ -2,9 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from kivy.app import App
+from kivy.metrics import cm
 from kivy.properties import StringProperty, BooleanProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -12,18 +16,49 @@ from kivy.properties import ObjectProperty
 import kivy.clock
 
 import webbrowser
-
 import pathlib
-
 import threading
 from schedule import Schedule
 import time
+import glob
 
 
+try:
+    client_file = glob.glob('../client_data/*.csv')[0]
+# When ther is no such file the list is empty and we get index error,
+# which we try to capture
+except IndexError:
+    client_file = str()
+
+try:
+    instructor_file = glob.glob('../instructor_data/*.csv')[0]
+# When ther is no such file the list is empty and we get index error,
+# which we try to capture
+except IndexError:
+    instructor_file = str()
+
+# global variable
+schedule_global = None
 
 
 class MainWindow(Screen):
-    pass
+    #TODO: split logic and GUI part between .kv and .py
+    my_popup = Popup(title="Error", size_hint=(0.3, 0.3), auto_dismiss=False)
+    popup_content = BoxLayout(orientation="vertical")
+    popup_content.add_widget(Label(size_hint=(1, 0.8), pos_hint={'top': 1}, text_size=(cm(6), cm(4)), font_size='20sp',
+                                   text="TypeError: Error during updating schedule - schedule is empty."))
+    popup_content.add_widget(Button(text='Close me!', size_hint=(1, 0.2), on_press=my_popup.dismiss))
+    my_popup.content = popup_content
+
+    def update_schedule_description(self):
+        # try:
+        global schedule_global
+        lista = [time_slot[0, 0].lesson_type for time_slot in schedule_global.schedule.reshape(-1, 1, 1)]
+        SeeSchedule.time_slots = lista
+        print(SeeSchedule.time_slots)
+        # except AttributeError:
+        #     MainWindow.my_popup.open()
+
 
 class Optimize(Screen):
     # TODO: co prodram ma zrobić po skończeniu optymalizacji
@@ -59,7 +94,6 @@ class Optimize(Screen):
         SM = Schedule(client_file=client_file,
                       instructor_file=instructor_file,
                       max_clients_per_training=5, time_slot_num=6)
-        SM.generate_random_schedule(greedy=False)
 
         print("\nINITIAL SCHEDULE")
         print(SM)
@@ -93,12 +127,14 @@ class Optimize(Screen):
         third_cost = SM.get_cost()
 
         print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
+        global schedule_global
+        schedule_global = SM
 
 class LoadFiles(Screen):
     pass
 
 
-client_file = str()
+
 class ClientFileChooser(Screen):
     def get_path(self):
         return str(pathlib.Path(__file__).parent.parent.resolve()) + r'\client_data'
@@ -112,7 +148,6 @@ class ClientFileChooser(Screen):
             pass
 
 
-instructor_file = str()
 class InstructorFileChooser(Screen):
     def get_path(self):
         return str(pathlib.Path(__file__).parent.parent.resolve()) + r'\instructor_data'
@@ -133,8 +168,13 @@ class AboutOrganizer(Screen):
         self.ids.github_button_img.source = 'images/GitHub-Mark-Light-120px-plus.png'
         webbrowser.open('https://github.com/kmotyka00/ScheduleOptimizationProblem')
 
+
 class SeeSchedule(Screen):
-    pass
+    time_slots = [None for i in range(36)]
+    def generate_schedule_layout(self):
+        global schedule_global
+        for time_slot in SeeSchedule.time_slots:
+            self.ids.schedule_layout.add_widget(Button(text=f'{time_slot}'))
 
 class WindowManager(ScreenManager):
     pass
@@ -149,3 +189,5 @@ class ScheduleOrganizer(App):
 
 if __name__ == '__main__':
     ScheduleOrganizer().run()
+
+#TODO: Wyświetlanie wyników, wykresu
