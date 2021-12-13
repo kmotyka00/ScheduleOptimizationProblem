@@ -7,7 +7,7 @@ WindowManager:
     ClientFileChooser:
     InstructorFileChooser:
     ScheduleParameters:
-
+    GoalFunction:
 
 
 <MainWindow>:
@@ -61,6 +61,16 @@ WindowManager:
                 color: '#80ffdb'
                 on_release:
                     app.root.current = 'about_organizer'
+                    root.manager.transition.direction = 'left'
+
+            Button:
+                text: 'Goal Function'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
+                on_release:
+                    root.manager.get_screen('goal_function').draw_plot()
+                    app.root.current = 'goal_function'
                     root.manager.transition.direction = 'left'
 
             Button:
@@ -565,7 +575,7 @@ WindowManager:
                     id: class_num
                     size_hint: 0.5, 0.5
                     pos_hint: {"center_y": 0.5}
-                    text: str(format(root.schedule_parameters['class_num'], '.0f'))
+                    text: str(format(root.schedule_parameters['class_num'], '.00f'))
                     text_size: self.size
                     background_color: (0, 0, 0, 0)
                     cursor_color: (1, 1, 1, 1)
@@ -594,7 +604,7 @@ WindowManager:
                     id: day_num
                     size_hint: 0.5, 0.5
                     pos_hint: {"center_y": 0.5}
-                    text: str(format(root.schedule_parameters['day_num'], '.0f'))
+                    text: str(format(root.schedule_parameters['day_num'], '.00f'))
                     text_size: self.size
                     background_color: (0, 0, 0, 0)
                     cursor_color: (1, 1, 1, 1)
@@ -623,7 +633,7 @@ WindowManager:
                     id: time_slot_num
                     size_hint: 0.5, 0.5
                     pos_hint: {"center_y": 0.5}
-                    text: str(format(root.schedule_parameters['time_slot_num'], '.0f'))
+                    text: str(format(root.schedule_parameters['time_slot_num'], '.00f'))
                     text_size: self.size
                     background_color: (0, 0, 0, 0)
                     cursor_color: (1, 1, 1, 1)
@@ -652,7 +662,7 @@ WindowManager:
                     id: max_clients_per_training
                     size_hint: 0.5, 0.5
                     pos_hint: {"center_y": 0.5}
-                    text: str(format(root.schedule_parameters['max_clients_per_training'], '.0f'))
+                    text: str(format(root.schedule_parameters['max_clients_per_training'], '.00f'))
                     text_size: self.size
                     background_color: (0, 0, 0, 0)
                     cursor_color: (1, 1, 1, 1)
@@ -681,7 +691,7 @@ WindowManager:
                     id: ticket_cost
                     size_hint: 0.5, 0.5
                     pos_hint: {"center_y": 0.5}
-                    text: str(format(root.schedule_parameters['ticket_cost'], '.0f'))
+                    text: str(format(root.schedule_parameters['ticket_cost'], '.00f'))
                     text_size: self.size
                     background_color: (0, 0, 0, 0)
                     cursor_color: (1, 1, 1, 1)
@@ -710,7 +720,7 @@ WindowManager:
                     id: hour_pay
                     size_hint: 0.5, 0.5
                     pos_hint: {"center_y": 0.5}
-                    text: str(format(root.schedule_parameters['hour_pay'], '.0f'))
+                    text: str(format(root.schedule_parameters['hour_pay'], '.00f'))
                     text_size: self.size
                     background_color: (0, 0, 0, 0)
                     cursor_color: (1, 1, 1, 1)
@@ -739,7 +749,7 @@ WindowManager:
                     id: pay_for_presence
                     size_hint: 0.5, 0.5
                     pos_hint: {"center_y": 0.5}
-                    text: str(format(root.schedule_parameters['pay_for_presence'], '.0f'))
+                    text: str(format(root.schedule_parameters['pay_for_presence'], '.000f'))
                     text_size: self.size
                     background_color: (0, 0, 0, 0)
                     cursor_color: (1, 1, 1, 1)
@@ -768,7 +778,7 @@ WindowManager:
                     id: class_renting_cost
                     size_hint: 0.5, 0.5
                     pos_hint: {"center_y": 0.5}
-                    text: str(format(root.schedule_parameters['class_renting_cost'], '.0f'))
+                    text: str(format(root.schedule_parameters['class_renting_cost'], '.00f'))
                     text_size: self.size
                     background_color: (0, 0, 0, 0)
                     cursor_color: (1, 1, 1, 1)
@@ -902,3 +912,25 @@ WindowManager:
             on_release:
                 app.root.current = 'menu'
                 root.manager.transition.direction = 'right'
+
+
+<GoalFunction>:
+    name: 'goal_function'
+    id: goal_function
+    BoxLayout:
+        id: box
+        size_hint_y: .8
+        pos_hint: {"top": 1}
+    BoxLayout:
+        size_hint_y: .2
+        Button:
+            text: 'Go Back'
+            font_name: 'fonts/Lcd.ttf'
+            font_size: '40dp'
+            color: '#80ffdb'
+            on_release:
+                app.root.current = 'menu'
+                root.manager.transition.direction = 'right'
+
+
+

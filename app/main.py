@@ -22,6 +22,11 @@ from schedule import Schedule
 import time
 import glob
 
+import numpy as np
+from kivy.garden.matplotlib import FigureCanvasKivyAgg
+import matplotlib.pyplot as plt
+#matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
+
 
 try:
     client_file = glob.glob('../client_data/*.csv')[0]
@@ -64,6 +69,7 @@ class Optimize(Screen):
     # TODO: co prodram ma zrobić po skończeniu optymalizacji
     # TODO: ładowanie plików
     # TODO: usunąć wywoływanie opt. w schedule.py
+    all_costs = list()
     def __init__(self, **kw):
         super().__init__(**kw)
         self.parameters = {
@@ -116,6 +122,9 @@ class Optimize(Screen):
                                                                    n_iter_without_improvement=self.parameters['n_iter_without_improvement'],
                                                                    initial_solution=self.parameters['initial_solution'],
                                                                    neighborhood_type_lst=self.parameters['neighborhood_type_lst'])
+
+        Optimize.all_costs = all_costs
+
         toc = time.time()
 
         print("\nAFTER OPTIMIZATION")
@@ -176,7 +185,7 @@ class ScheduleParameters(Screen):
         'max_clients_per_training': 5,
         'ticket_cost': 40,
         'hour_pay': 50,
-        'pay_for_presence': 0.01,
+        'pay_for_presence': 50,
         'class_renting_cost': 200}
 
     def on_text(self, parameter, input_parameter):
@@ -201,6 +210,21 @@ class SeeSchedule(Screen):
         global schedule_global
         for time_slot in SeeSchedule.time_slots:
             self.ids.schedule_layout.add_widget(Button(text=f'{time_slot}'))
+
+class GoalFunction(Screen):
+
+    box = None
+
+    def draw_plot(self):
+        box = self.ids.box
+        box.clear_widgets()
+        plt.clf()
+        plt.plot(Optimize.all_costs)
+        plt.title('Goal function over number of iterations')
+        plt.xlabel('Number of iterations')
+        plt.ylabel('Earnings [$]')
+        box.add_widget(FigureCanvasKivyAgg(plt.gcf()))
+
 
 class WindowManager(ScreenManager):
     pass
