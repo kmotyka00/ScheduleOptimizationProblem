@@ -79,7 +79,7 @@ WindowManager:
                 font_size: '40dp'
                 color: '#80ffdb'
                 on_release:
-                    root.manager.get_screen('see_schedule').generate_schedule_layout()
+                    root.manager.get_screen('see_schedule').generate_see_schedule_layout()
                     root.update_schedule_description()
                     app.root.current = 'see_schedule'
                     root.manager.transition.direction = 'left'
@@ -858,9 +858,6 @@ WindowManager:
                     valign: 'top'
                     padding_x: '20dp'
 
-
-
-
                 Button:
                     id: github_button
                     background_normal: 'images/GitHub-Mark-Light-120px-plus.png'
@@ -901,25 +898,43 @@ WindowManager:
         GridLayout:
             rows: 2
             GridLayout:
-                id: days_layout
+                cols: 2
                 size_hint: 1, 0.14
-                cols: 7
+                Button:
+                    id: change_class
+                    size_hint: 0.14, 1
+                    text: 'Change class'
+                    text_size: self.size
+                    font_size: self.width / 4
+                    font_name: 'fonts/Lcd.ttf'
+                    color: '#80ffdb'
+                    halign: 'center'
+                    valign: 'center'
+
+                GridLayout:
+                    id: days_layout
+                    size_hint: 0.86, 1
+                    cols: 6
 
             GridLayout:
+                size_hint: 1, 0.86
+                cols: 2
+
                 GridLayout:
                     id: hours_layout
+                    size_hint: 0.14, 1
                     rows: 6
 
                 GridLayout:
                     id: schedule_layout
+                    size_hint: 0.86, 1
                     cols: 6
 
-
         Button:
+            size_hint: (1, 0.1)
             text: 'Go Back'
             font_name: 'fonts/Lcd.ttf'
             font_size: '40dp'
-            size_hint: (1, 0.1)
             color: '#80ffdb'
             on_release:
                 app.root.current = 'menu'

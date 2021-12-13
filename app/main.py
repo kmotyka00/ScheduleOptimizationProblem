@@ -47,32 +47,43 @@ schedule_global = None
 
 
 class MainWindow(Screen):
-    #TODO: split logic and GUI part between .kv and .py
-    my_popup = Popup(title="Error", size_hint=(0.3, 0.3), auto_dismiss=False)
-    popup_content = BoxLayout(orientation="vertical")
-    popup_content.add_widget(Label(size_hint=(1, 0.8), pos_hint={'top': 1}, text_size=(cm(6), cm(4)), font_size='20sp',
-                                   text="TypeError: Error during updating schedule - schedule is empty."))
-    popup_content.add_widget(Button(text='Close me!', size_hint=(1, 0.2), on_press=my_popup.dismiss))
-    my_popup.content = popup_content
+    # Error Popup
+    my_error_popup = Popup(title="Error", size_hint=(None, None), size=(300, 200), auto_dismiss=False)
+    error_popup_content = BoxLayout(orientation="vertical")
+    error_popup_content.add_widget(
+        Label(size=(cm(6), cm(4)), pos_hint={'top': 1}, text_size=(cm(6), cm(4)), font_size='20sp',
+              text='AttributeError: Error during updating schedule - schedule is empty.',
+              halign='center', valign='center'))
+    error_popup_content.add_widget(Button(text='Close', size_hint=(1, 0.2), on_press=my_error_popup.dismiss))
+    my_error_popup.content = error_popup_content
 
     def update_schedule_description(self):
         # TODO zmienić 36, na coś wczytanego
-        # try:
-        global schedule_global
-        temp_schedule = schedule_global.schedule.T.reshape(-1, 1, 1).squeeze()
-        for time_slot in range(36):
-            lesson = temp_schedule[time_slot]
-            if lesson != None:
-                # Read lesson_type and convert it to user friendly string
-                new_text = f'{lesson.lesson_type}'.split('.')[1].split('_')
-                converted_text = str()
-                for i in range(len(new_text)):
-                    converted_text += new_text[i] + ' '
-                self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].text = converted_text
-            else:
-                self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].text = 'Free'
-        # except AttributeError:
-        #     MainWindow.my_popup.open()
+        try:
+            global schedule_global
+            # reshape and transpose schedule for convenient indexing
+            temp_schedule = schedule_global.schedule.T.reshape(-1, 1, 1).squeeze()
+            for time_slot in range(ScheduleParameters.schedule_parameters['day_num']
+                               * ScheduleParameters.schedule_parameters['time_slot_num']):
+                lesson = temp_schedule[time_slot]
+                if lesson != None:
+                    # Read lesson_type and convert it to user friendly string
+                    new_text = f'{lesson.lesson_type}'.split('.')[1].split('_')
+                    converted_text = str()
+                    for i in range(len(new_text)):
+                        converted_text += new_text[i] + ' '
+                    # make button kind of a parent for lesson
+                    self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].ids['lesson'] = lesson
+                    self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].ids['lesson_time_slot'] = \
+                        time_slot
+                    self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].text = converted_text
+                else:
+                    self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].ids['lesson'] = lesson
+                    self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].ids['lesson_time_slot'] = \
+                        time_slot
+                    self.manager.get_screen('see_schedule').ids[f'Button{time_slot}'].text = 'Free'
+        except AttributeError:
+            MainWindow.my_error_popup.open()
 
 
 
@@ -187,7 +198,6 @@ class InstructorFileChooser(Screen):
 
 
 class ScheduleParameters(Screen):
-
     schedule_parameters = {
         'class_num': 1,
         'day_num': 6,
@@ -216,42 +226,99 @@ class AboutOrganizer(Screen):
 
 # Functions to enable assignment
 # self.font_size: self.width / 8
-def set_font_size(instance, value):
-    instance.font_size = value / 8
+def set_font_size(font_size_divider, *args, **kwargs):
+    def wrap(instance, value, *args, **kwargs):
+        instance.font_size = value / font_size_divider
+    return wrap
+
+
 # self.text_size: self.size
 def set_text_size(instance, value):
     instance.text_size = value
 
+
 class SeeSchedule(Screen):
-    #TODO zmienić 36, na coś wczytanego
+    def chceck_content(self, instance):
+        # Lesson Content Popup
+        if instance.ids['lesson'] is not None:
+            participants = '\n'
+            for participant in instance.ids['lesson'].participants:
+                participants += str(participant) + '\n'
+            lesson_content = f"Instructor ID: \n{str(instance.ids['lesson'].instructor)}" \
+                             f"\n\nParticipants: {participants}"
+        else:
+            lesson_content = "That's a FREE REAL ESTATE"
+        lesson_content_popup = Popup(title=f'Lesson information')
+        popup_content = BoxLayout(orientation="vertical")
+        label = Label(text=lesson_content, halign='center', valign='center')
+        # self.font_size: self.width / 8
+        label.bind(width=set_font_size(50))
+        # self.text_size: self.size
+        label.bind(size=set_text_size)
+        popup_content.add_widget(label)
+        popup_content.add_widget(Button(text='Close', size_hint=(1, 0.2), on_press=lesson_content_popup.dismiss))
+        lesson_content_popup.content = popup_content
+        return lesson_content_popup.open()
+
+
+    def generate_see_schedule_layout(self):
+        self.generate_schedule_layout()
+        self.genrate_hours_layout()
+        self.genrate_days_layout()
 
     def generate_schedule_layout(self):
-        for time_slot in range(36):
+        for time_slot in range(ScheduleParameters.schedule_parameters['day_num']
+                               * ScheduleParameters.schedule_parameters['time_slot_num']):
             if f'Button{time_slot}' not in self.ids.keys():
                 button = Button(text=f'{None}', halign='center', valign='center')
+                button.background_normal = ''
+                if time_slot % 2 == 0:
+                    button.background_color = [.8, .8, .9, .6]
+                else:
+                    button.background_color = [.8, .8, .9, .8]
                 # self.font_size: self.width / 8
-                button.bind(width=set_font_size)
+                button.bind(width=set_font_size(8))
                 # self.text_size: self.size
                 button.bind(size=set_text_size)
+                button.bind(on_press=self.chceck_content)
                 self.ids.schedule_layout.add_widget(button)
                 self.ids[f'Button{time_slot}'] = button
 
     def genrate_hours_layout(self):
-        for time_slot in range(36):
-            if f'Button{time_slot}' not in self.ids.keys():
-                button = Button(text=f'{None}', halign='center', valign='center')
+        for time_slot in range(ScheduleParameters.schedule_parameters['time_slot_num']):
+            if f'Button_hours{time_slot}' not in self.ids.keys():
+                button = Button(text=f'{time_slot}', halign='center', valign='center')
+                button.background_normal = ''
+                button.background_color = [.8, .8, .9, .2]
                 # self.font_size: self.width / 8
-                button.bind(width=set_font_size)
+                button.bind(width=set_font_size(8))
                 # self.text_size: self.size
                 button.bind(size=set_text_size)
-                self.ids.schedule_layout.add_widget(button)
-                self.ids[f'Button{time_slot}'] = button
+                self.ids.hours_layout.add_widget(button)
+                self.ids[f'Button_hours{time_slot}'] = button
+
+    def genrate_days_layout(self):
+        days = ['Monday', 'Tusday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        for day in range(ScheduleParameters.schedule_parameters['day_num']):
+            if f'Button_days{day}' not in self.ids.keys():
+                button = Button(text=f'{days[day]}', halign='center', valign='center')
+                button.background_normal = ''
+                if day % 2 == 0:
+                    button.background_color = [.8, .8, .9, .2]
+                else:
+                    button.background_color = [.8, .8, .9, .3]
+                # self.font_size: self.width / 8
+                button.bind(width=set_font_size(8))
+                # self.text_size: self.size
+                button.bind(size=set_text_size)
+                self.ids.days_layout.add_widget(button)
+                self.ids[f'Button_days{day}'] = button
+
+
 
 
 class GoalFunction(Screen):
-
     box = None
-
     def draw_plot(self):
         box = self.ids.box
         box.clear_widgets()
