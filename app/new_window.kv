@@ -56,13 +56,16 @@ WindowManager:
 
 
             Button:
-                text: 'About Organizer'
+                text: 'See Schedule'
                 font_name: 'fonts/Lcd.ttf'
                 font_size: self.width/12
                 color: '#80ffdb'
                 on_release:
-                    app.root.current = 'about_organizer'
+                    root.manager.get_screen('see_schedule').generate_see_schedule_layout()
+                    root.manager.get_screen('see_schedule').update_schedule_description()
+                    app.root.current = 'see_schedule'
                     root.manager.transition.direction = 'left'
+
 
             Button:
                 text: 'Goal Function'
@@ -84,14 +87,12 @@ WindowManager:
                     root.manager.transition.direction = 'left'
 
             Button:
-                text: 'See Schedule'
+                text: 'About Organizer'
                 font_name: 'fonts/Lcd.ttf'
                 font_size: self.width/12
                 color: '#80ffdb'
                 on_release:
-                    root.manager.get_screen('see_schedule').generate_see_schedule_layout()
-                    root.manager.get_screen('see_schedule').update_schedule_description()
-                    app.root.current = 'see_schedule'
+                    app.root.current = 'about_organizer'
                     root.manager.transition.direction = 'left'
 
             Button:
