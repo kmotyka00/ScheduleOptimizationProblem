@@ -204,9 +204,10 @@ class Schedule:
         Helps to print a current schedule preety and intuitive
     """
 
-    def __init__(self, client_file: str = 'form_answers.csv', instructor_file: str = 'instructors_info.csv',
+    def __init__(self, client_file: str = './client_data/form_answers.csv',
+                 instructor_file: str = './instructor_data/instructors_info.csv',
                  class_num=1, day_num=6, time_slot_num=6, max_clients_per_training=5,
-                 ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=200):
+                 ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=500):
         self.class_id = class_num
         self.day = day_num  # monday - saturday
         self.time_slot = time_slot_num
@@ -251,7 +252,7 @@ class Schedule:
         """
 
         # reshaping to a vector [1 x classes * days * time slots] to facilitate iterating 
-        self.schedule = self.schedule.reshape((-1, 1))
+        self.schedule = self.schedule.reshape((-1, 1, 1)).squeeze()
         i = 0
 
         # list of free time slots in particular days 
@@ -262,8 +263,8 @@ class Schedule:
 
             # list of all participants and instructor who have chosen particular lesson type
             all_participants = [client for client in self.clients if lesson_type in client.selected_training]
-            all_instructors = [instructor for instructor in self.instructors if
-                               lesson_type in instructor.qualifications]
+            all_instructors = {instructor.id: instructor for instructor in self.instructors if
+                               lesson_type in instructor.qualifications}
 
             # number of trainings which need to be coducted to please all clients
             num_of_trainings = int(np.ceil(len(all_participants) / self.max_clients_per_training))
@@ -281,6 +282,9 @@ class Schedule:
                     i += 1
                 else:
                     lesson_id = free_ts.pop(random.randint(0, len(free_ts) - 1))
+                    # TODO ograniczyć suwak alfy < 1
+                    # TODO obsłużyć zbyt dużą liczbę zajęć - np. poprzez dodanie nowej sali
+
 
                 # interval in vector self.schedule which represents a break between same time slots
                 # and days in different classes
@@ -291,11 +295,12 @@ class Schedule:
 
                     # checking if lesson is taking place 
                     if self.schedule[ts] != None:
-                        # removing inaccessible instructors from all_instructors list
-                        all_instructors.remove(self.schedule[ts].instructor.id)  # TODO: TEST
+                        if self.schedule[ts].instructor.id in all_instructors.keys():
+                            # removing inaccessible instructors from all_instructors list
+                            all_instructors.pop(self.schedule[ts].instructor.id)  # TODO: TEST
 
                 # random choice of instructor from all_instructors list for new lesson
-                instructor = random.choice(all_instructors)
+                instructor = random.choice(list(all_instructors.values()))
 
                 # putting new lesson to schedule
                 self.schedule[lesson_id] = Lesson(instructor, lesson_type, participants)
@@ -387,6 +392,7 @@ class Schedule:
                     # swap values contained in drawn indices
                     current_solution[random_none_id] = current_solution[random_not_none_id]
                     current_solution[random_not_none_id] = None
+
             if neighborhood_type == 'move_to_most_busy' or neighborhood_type == 'swap_with_most_busy':
                 # reshaping current_solution to make sure it's a matrix
                 current_solution = current_solution.reshape((self.class_id, self.day, self.time_slot))
@@ -556,7 +562,9 @@ class Schedule:
         # loop repeating until there is no change to ensure
         # that instructor 1 can be moved in space freed by instructor 3
         changed = True
-        while changed:
+        iter = 0
+        while changed and iter < 1000:
+            iter += 1
             changed = False
 
             # loop for each instructor
@@ -673,8 +681,10 @@ class Schedule:
 
         return result
 
-
-# SM = Schedule(max_clients_per_training=5, time_slot_num=6)
+#
+# SM = Schedule(client_file='./client_data/form_answers_2.csv',
+#                 instructor_file='./instructor_data/instructors_info_2.csv',
+#                 max_clients_per_training=5, time_slot_num=6, class_num=2)
 # SM.generate_random_schedule(greedy=False)
 #
 # print("\nINITIAL SCHEDULE")
@@ -682,10 +692,11 @@ class Schedule:
 # print('Initial earnings: ', SM.get_cost())
 # first_cost = SM.get_cost()
 # tic = time.time()
-# best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=0.99, initial_temp=1000, n_iter_one_temp=10,
+# best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=0.999, initial_temp=1000, n_iter_one_temp=10,
 #                                                            min_temp=0.1,
 #                                                            epsilon=0.01, n_iter_without_improvement=10,
-#                                                            initial_solution=True, neighborhood_type_lst=['change_instructor'])
+#                                                            initial_solution=True, neighborhood_type_lst=['move_one',
+#                                                                                                          'change_instructors'])
 # toc = time.time()
 #
 # print("\nAFTER OPTIMIZATION")
@@ -723,3 +734,4 @@ class Schedule:
 #   okazać się lepsze bo nie utrudnia działania algorytmu a takich przypadków nie powinno być dużo
 #  TODO: - inaczej wybierać otoczenie - zmiana instruktorów
 #  TODO: - dodać dokumentację
+

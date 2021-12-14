@@ -91,6 +91,7 @@ class MainWindow(Screen):
 class Optimize(Screen):
     # TODO: co prodram ma zrobić po skończeniu optymalizacji
     # TODO: usunąć wywoływanie opt. w schedule.py
+    # TODO: możliwość zmiany parametru greedy
     all_costs = list()
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -128,6 +129,7 @@ class Optimize(Screen):
                       hour_pay=ScheduleParameters.schedule_parameters['hour_pay'],
                       pay_for_presence=ScheduleParameters.schedule_parameters['pay_for_presence'],
                       class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'])
+        SM.generate_random_schedule(greedy=False)
 
         print("\nINITIAL SCHEDULE")
         print(SM)
@@ -167,7 +169,7 @@ class Optimize(Screen):
         global schedule_global
         schedule_global = SM
 
-class LoadFiles(Screen):
+class ScheduleOptions(Screen):
     pass
 
 
@@ -345,3 +347,4 @@ if __name__ == '__main__':
     ScheduleOrganizer().run()
 
 #TODO: Wyświetlanie wyników, wykresu
+#TODO explicit improve result

@@ -1,7 +1,7 @@
 WindowManager:
     MainWindow:
     Optimize:
-    LoadFiles:
+    ScheduleOptions:
     AboutOrganizer:
     SeeSchedule:
     ClientFileChooser:
@@ -45,12 +45,12 @@ WindowManager:
                     root.manager.transition.direction = 'left'
 
             Button:
-                text: 'Load Files'
+                text: 'Schedule Options'
                 font_name: 'fonts/Lcd.ttf'
                 font_size: '40dp'
                 color: '#80ffdb'
                 on_release:
-                    app.root.current = 'load_files'
+                    app.root.current = 'schedule options'
                     root.manager.transition.direction = 'left'
 
 
@@ -395,8 +395,8 @@ WindowManager:
 
 
 
-<LoadFiles>:
-    name: 'load_files'
+<ScheduleOptions>:
+    name: 'schedule options'
     padding: 50
     BoxLayout:
         orientation: 'vertical'
@@ -503,7 +503,7 @@ WindowManager:
             font_size: '40dp'
             color: '#80ffdb'
             on_release:
-                app.root.current = 'load_files'
+                app.root.current = 'schedule options'
                 root.manager.transition.direction = 'right'
 
 <InstructorFileChooser>:
@@ -532,7 +532,7 @@ WindowManager:
             font_size: '40dp'
             color: '#80ffdb'
             on_release:
-                app.root.current = 'load_files'
+                app.root.current = 'schedule options'
                 root.manager.transition.direction = 'right'
 
 
