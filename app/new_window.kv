@@ -8,6 +8,7 @@ WindowManager:
     InstructorFileChooser:
     ScheduleParameters:
     GoalFunction:
+    SeeAlgorithmParameters:
 
 
 <MainWindow>:
@@ -71,6 +72,15 @@ WindowManager:
                 on_release:
                     root.manager.get_screen('goal_function').draw_plot()
                     app.root.current = 'goal_function'
+                    root.manager.transition.direction = 'left'
+
+            Button:
+                text: 'See Algorithm Parameters'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
+                on_release:
+                    app.root.current = 'see_algorithm_parameters'
                     root.manager.transition.direction = 'left'
 
             Button:
@@ -960,5 +970,42 @@ WindowManager:
                 app.root.current = 'menu'
                 root.manager.transition.direction = 'right'
 
+# liczba iteracji, koszt, koszt po algorytmie, koszt po improve i pauza jak nie będzie włączonego,
+# liczba uczestników, liczba prowadzących
+<SeeAlgorithmParameters>:
+    name: 'see_algorithm_parameters'
+    id: see_algorithm_parameters
+    BoxLayout:
+        orientation: 'vertical'
 
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: 1, 0.2
+            spacing: 15
+            Label:
+                text: 'Initial cost:'
+                font_size: self.width/8
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+
+            Label:
+                text: str(root.manager.get_screen('optimize').first_cost)
+                font_size: self.width/8
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+
+        GridLayout:
+            cols: 1
+            size_hint: (1, None)
+            height: '100dp'
+            Button:
+                text: 'Go Back'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: '40dp'
+                color: '#80ffdb'
+                on_release:
+                    app.root.current = 'menu'
+                    root.manager.transition.direction = 'right'
 

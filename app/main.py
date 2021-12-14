@@ -48,7 +48,6 @@ schedule_global = None
 
 
 class MainWindow(Screen):
-    pass
 
 
 
@@ -57,6 +56,7 @@ class Optimize(Screen):
     # TODO: co prodram ma zrobić po skończeniu optymalizacji
     # TODO: usunąć wywoływanie opt. w schedule.py
     # TODO: możliwość zmiany parametru greedy
+    first_cost = float()
     all_costs = list()
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -100,6 +100,8 @@ class Optimize(Screen):
         print(SM)
         print('Initial earnings: ', SM.get_cost())
         first_cost = SM.get_cost()
+        Optimize.first_cost = first_cost
+
         tic = time.time()
 
         best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=self.parameters['alpha'],
@@ -133,6 +135,8 @@ class Optimize(Screen):
         print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
         global schedule_global
         schedule_global = SM
+
+
 
 class ScheduleOptions(Screen):
     pass
@@ -355,6 +359,7 @@ class SeeSchedule(Screen):
 
 class GoalFunction(Screen):
     box = None
+
     def draw_plot(self):
         box = self.ids.box
         box.clear_widgets()
@@ -365,6 +370,8 @@ class GoalFunction(Screen):
         plt.ylabel('Earnings [$]')
         box.add_widget(FigureCanvasKivyAgg(plt.gcf()))
 
+class SeeAlgorithmParameters(Screen):
+    pass
 
 class WindowManager(ScreenManager):
     pass
@@ -381,4 +388,5 @@ if __name__ == '__main__':
     ScheduleOrganizer().run()
 
 #TODO: Wyświetlanie wyników, wykresu
-#TODO explicity
+#TODO explicit improve
+#TODO: jak odrazu da sie see schedule i kliknie jakis button to sie wywala#TODO explicity
