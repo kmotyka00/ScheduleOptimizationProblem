@@ -401,6 +401,7 @@ WindowManager:
                 valign: 'middle'
                 on_release:
                     root.start_optimization()
+                    root.update_algorithm_parameters()
 
 
 
@@ -980,18 +981,133 @@ WindowManager:
 
         BoxLayout:
             orientation: "horizontal"
-            size_hint: 1, 0.2
             spacing: 15
             Label:
                 text: 'Initial cost:'
-                font_size: self.width/8
+                font_size: self.width/16
                 text_size: self.size
                 halign: 'right'
                 valign: 'middle'
 
             Label:
-                text: str(root.manager.get_screen('optimize').first_cost)
-                font_size: self.width/8
+                #size_hint: (0.3, 1)
+                id: first_cost
+                text: 'None'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 15
+            Label:
+                text: 'Cost after optimization:'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+
+            Label:
+                #size_hint: (0.3, 1)
+                id: second_cost
+                text: 'None'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 15
+            Label:
+                text: 'Cost after improvement:'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+
+            Label:
+                #size_hint: (0.3, 1)
+                id: third_cost
+                text: 'None'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 15
+            Label:
+                text: 'Number of iterations:'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+
+            Label:
+                #size_hint: (0.3, 1)
+                id: num_of_iter
+                text: 'None'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 15
+            Label:
+                text: 'Clients number:'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+
+            Label:
+                #size_hint: (0.3, 1)
+                id: clients_num
+                text: 'None'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 15
+            Label:
+                text: 'Instructor number:'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+
+            Label:
+                #size_hint: (0.3, 1)
+                id: instructors_num
+                text: 'None'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 15
+            Label:
+                text: 'Time:'
+                font_size: self.width/16
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+
+            Label:
+                #size_hint: (0.3, 1)
+                id: alg_time
+                text: 'None'
+                font_size: self.width/16
                 text_size: self.size
                 halign: 'left'
                 valign: 'middle'

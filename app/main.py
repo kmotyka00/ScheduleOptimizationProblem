@@ -26,7 +26,7 @@ import glob
 import numpy as np
 from kivy.garden.matplotlib import FigureCanvasKivyAgg
 import matplotlib.pyplot as plt
-#matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
+import pandas as pd
 
 
 try:
@@ -51,13 +51,18 @@ class MainWindow(Screen):
     pass
 
 
-
 class Optimize(Screen):
     # TODO: co prodram ma zrobić po skończeniu optymalizacji
     # TODO: usunąć wywoływanie opt. w schedule.py
     # TODO: możliwość zmiany parametru greedy
     first_cost = float()
+    second_cost = float()
+    third_cost = float()
     all_costs = list()
+    num_of_iter = int()
+    clients_num = int()
+    instructors_num = int()
+
     def __init__(self, **kw):
         super().__init__(**kw)
         self.parameters = {
@@ -83,6 +88,15 @@ class Optimize(Screen):
         except ValueError:
             self.parameters[parameter] = 0
 
+    def update_algorithm_parameters(self):
+        self.manager.get_screen('see_algorithm_parameters').ids.first_cost.text = str(Optimize.first_cost) + " $"
+        self.manager.get_screen('see_algorithm_parameters').ids.second_cost.text = str(Optimize.second_cost) + " $"
+        self.manager.get_screen('see_algorithm_parameters').ids.third_cost.text = str(Optimize.third_cost) + " $"
+        self.manager.get_screen('see_algorithm_parameters').ids.num_of_iter.text = str(Optimize.num_of_iter)
+        self.manager.get_screen('see_algorithm_parameters').ids.clients_num.text = str(Optimize.clients_num)
+        self.manager.get_screen('see_algorithm_parameters').ids.instructors_num.text = str(Optimize.instructors_num)
+        self.manager.get_screen('see_algorithm_parameters').ids.alg_time.text = str(format(Optimize.alg_time, '.2f')) + " s"
+
     def start_optimization(self):
         SM = Schedule(client_file=client_file,
                       instructor_file=instructor_file,
@@ -95,6 +109,9 @@ class Optimize(Screen):
                       pay_for_presence=ScheduleParameters.schedule_parameters['pay_for_presence'],
                       class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'])
         SM.generate_random_schedule(greedy=False)
+
+        Optimize.clients_num = pd.read_csv(client_file, sep=";").shape[0]
+        Optimize.instructors_num = pd.read_csv(instructor_file, sep=";").shape[0]
 
         print("\nINITIAL SCHEDULE")
         print(SM)
@@ -114,8 +131,10 @@ class Optimize(Screen):
                                                                    neighborhood_type_lst=self.parameters['neighborhood_type_lst'])
 
         Optimize.all_costs = all_costs
-
+        Optimize.num_of_iter = num_of_iter
         toc = time.time()
+
+        Optimize.alg_time = toc - tic
 
         print("\nAFTER OPTIMIZATION")
         print(SM)
@@ -123,6 +142,7 @@ class Optimize(Screen):
 
         print("Best earnings: ", best_cost)
         second_cost = best_cost
+        Optimize.second_cost = second_cost
         print("Time: ", toc - tic)
 
         SM.improve_results()
@@ -131,6 +151,7 @@ class Optimize(Screen):
         print("Best improved earnings: ", SM.get_cost())
 
         third_cost = SM.get_cost()
+        Optimize.third_cost = third_cost
 
         print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
         global schedule_global
@@ -300,7 +321,6 @@ class SeeSchedule(Screen):
     my_error_popup.content = error_popup_content
 
     def update_schedule_description(self):
-        # TODO zmienić 36, na coś wczytanego
         try:
             global schedule_global
             # reshape and transpose schedule for convenient indexing
