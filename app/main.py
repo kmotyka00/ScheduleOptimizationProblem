@@ -48,7 +48,7 @@ schedule_global = None
 
 
 class MainWindow(Screen):
-
+    pass
 
 
 
