@@ -453,7 +453,7 @@ class Schedule:
 
     def simulated_annealing(self, alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
                             epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True,
-                            neighborhood_type_lst=None):
+                            neighborhood_type_lst=None, greedy=False):
         """
         Simulated Annealing is a probabilistic technique for approximating the global optimum
         of a given function.
@@ -480,6 +480,8 @@ class Schedule:
             If True, algortihm will optimize self.schedule.
         neighborhood_type_lst: List[str]
             Parameter specify method of choosing neighborhood
+        greedy: bool, defalut=False
+            Create initial solution packing trainings next to each other
 
         Returns
         -------
@@ -493,7 +495,7 @@ class Schedule:
             neighborhood_type_lst = ['move_one']
 
         if not initial_solution:
-            self.generate_random_schedule()  # self.schedule initialized
+            self.generate_random_schedule(greedy)  # self.schedule initialized
 
         # copy existing schedule to prevent unwanted changes
         current_solution = copy.deepcopy(self.schedule)

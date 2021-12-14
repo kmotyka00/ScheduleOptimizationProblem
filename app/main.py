@@ -48,7 +48,7 @@ schedule_global = None
 
 
 class MainWindow(Screen):
-
+    pass
 
 
 
@@ -61,14 +61,16 @@ class Optimize(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
         self.parameters = {
-            'neighborhood_type_lst': list(),
+            'neighborhood_type_lst': ['move_one'],
             'initial_solution': False,
             'alpha': 0.5,
             'initial_temp': 100,
             'n_iter_one_temp': 50,
             'min_temp': 0.1,
             'epsilon': 0.01,
-            'n_iter_without_improvement': 1000}
+            'n_iter_without_improvement': 1000,
+            'greedy': False,
+            'improve_results': True}
 
     def checkbox_click(self, instance, value, neighborhood_type):
         if value is True:
@@ -94,7 +96,8 @@ class Optimize(Screen):
                       hour_pay=ScheduleParameters.schedule_parameters['hour_pay'],
                       pay_for_presence=ScheduleParameters.schedule_parameters['pay_for_presence'],
                       class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'])
-        SM.generate_random_schedule(greedy=False)
+
+        SM.generate_random_schedule(greedy=self.parameters['greedy'])
 
         print("\nINITIAL SCHEDULE")
         print(SM)
@@ -110,7 +113,7 @@ class Optimize(Screen):
                                                                    min_temp=self.parameters['min_temp'],
                                                                    epsilon=self.parameters['epsilon'],
                                                                    n_iter_without_improvement=self.parameters['n_iter_without_improvement'],
-                                                                   initial_solution=self.parameters['initial_solution'],
+                                                                   initial_solution=True,
                                                                    neighborhood_type_lst=self.parameters['neighborhood_type_lst'])
 
         Optimize.all_costs = all_costs
@@ -125,14 +128,17 @@ class Optimize(Screen):
         second_cost = best_cost
         print("Time: ", toc - tic)
 
-        SM.improve_results()
-        print("\nIMPROVED SCHEDULE")
-        print(SM)
-        print("Best improved earnings: ", SM.get_cost())
+        if self.parameters['improve_results']:
+            SM.improve_results()
+            print("\nIMPROVED SCHEDULE")
+            print(SM)
+            print("Best improved earnings: ", SM.get_cost())
 
-        third_cost = SM.get_cost()
+            third_cost = SM.get_cost()
+            print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
+        else:
+            print(f'{first_cost} $ --> {second_cost} $')
 
-        print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
         global schedule_global
         schedule_global = SM
 
@@ -300,7 +306,6 @@ class SeeSchedule(Screen):
     my_error_popup.content = error_popup_content
 
     def update_schedule_description(self):
-        # TODO zmienić 36, na coś wczytanego
         try:
             global schedule_global
             # reshape and transpose schedule for convenient indexing
@@ -329,11 +334,12 @@ class SeeSchedule(Screen):
 
     def change_displayed_class_button_on_press(self, instance):
         SeeSchedule.classroom_displayed = instance.ids['classroom_id']
+        self.ids['change_class_button'].text = f"Displayed classroom id: {instance.ids['classroom_id']}"
         self.update_schedule_description()
 
     # Pick Classroom Popup
     def pick_classroom_popup(self):
-        pick_classroom_popup = Popup(title="Error", size_hint=(0.6, 0.6), auto_dismiss=False)
+        pick_classroom_popup = Popup(title="Pick Classroom", size_hint=(0.6, 0.6), auto_dismiss=False)
         pick_classroom_popup_main_layout = GridLayout(cols=1, size_hint=(1, 1))
         pick_classroom_popup_classroom_buttons = GridLayout(cols=3, size_hint=(1, 0.8))
         for classroom in range(ScheduleParameters.schedule_parameters['class_num']):
@@ -389,4 +395,3 @@ if __name__ == '__main__':
 
 #TODO: Wyświetlanie wyników, wykresu
 #TODO explicit improve
-#TODO: jak odrazu da sie see schedule i kliknie jakis button to sie wywala#TODO explicity
