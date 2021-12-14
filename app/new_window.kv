@@ -80,7 +80,7 @@ WindowManager:
                 color: '#80ffdb'
                 on_release:
                     root.manager.get_screen('see_schedule').generate_see_schedule_layout()
-                    root.update_schedule_description()
+                    root.manager.get_screen('see_schedule').update_schedule_description()
                     app.root.current = 'see_schedule'
                     root.manager.transition.direction = 'left'
 
@@ -910,6 +910,7 @@ WindowManager:
                     color: '#80ffdb'
                     halign: 'center'
                     valign: 'center'
+                    on_release: root.pick_classroom_popup()
 
                 GridLayout:
                     id: days_layout
