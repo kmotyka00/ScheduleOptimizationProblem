@@ -357,6 +357,7 @@ class SeeSchedule(Screen):
         self.ids['change_class_button'].text = f"Displayed classroom id: {instance.ids['classroom_id']}"
         self.update_schedule_description()
 
+
     # Pick Classroom Popup
     def pick_classroom_popup(self):
         pick_classroom_popup = Popup(title="Pick Classroom", size_hint=(0.6, 0.6), auto_dismiss=False)

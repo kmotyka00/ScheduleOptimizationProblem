@@ -106,7 +106,14 @@ class Instructor:
         str
             string to be printed
         """
-        return f"id: {self.id}, qualifications: {self.qualifications}"
+        qualification_str = str()
+        for elem in self.qualifications:
+            temp = str(elem).split('.')[1].split('_')
+            converted_text = str()
+            for i in range(len(temp)):
+                converted_text += temp[i] + ' '
+            qualification_str += converted_text + '\n'
+        return f"id: {self.id}, qualifications: {qualification_str}"
 
 
 class Lesson:

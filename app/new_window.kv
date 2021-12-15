@@ -101,7 +101,7 @@ WindowManager:
                 font_name: 'fonts/Lcd.ttf'
                 font_size: self.width/8
                 color: '#80ffdb'
-                on_press: app.stop()
+                on_release: app.stop()
 
 
 <Optimize>:
@@ -401,10 +401,10 @@ WindowManager:
 
         BoxLayout:
             orientation: 'horizontal'
-            size_hint: (1, 0.2)
+            size_hint: (1, 0.1)
 
             Button:
-                text: 'Go Back'
+                text: 'Main Menu'
                 text_size: self.size
                 font_name: 'fonts/Lcd.ttf'
                 font_size: '30dp'
@@ -994,12 +994,15 @@ WindowManager:
                     cols: 6
 
         GridLayout:
-            cols: 2
+            cols: 3
             size_hint: (1, 0.1)
             Button:
-                text: 'Go Back'
+                text: 'Main menu'
                 font_name: 'fonts/Lcd.ttf'
-                font_size: '40dp'
+                font_size: self.width/8
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
                 color: '#80ffdb'
                 on_release:
                     app.root.current = 'menu'
@@ -1009,7 +1012,8 @@ WindowManager:
                 text: 'See Goal Function'
                 text_size: self.size
                 font_name: 'fonts/Lcd.ttf'
-                font_size: '30dp'
+                font_size: self.width/8
+                text_size: self.size
                 color: '#80ffdb'
                 halign: 'center'
                 valign: 'middle'
@@ -1018,22 +1022,36 @@ WindowManager:
                     app.root.current = 'goal_function'
                     root.manager.transition.direction = 'right'
 
+            Button:
+                text: 'To Optimization'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: self.width/8
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                color: '#80ffdb'
+                on_release:
+                    app.root.current = 'optimize'
+                    root.manager.transition.direction = 'left'
+
 
 <GoalFunction>:
     name: 'goal_function'
     id: goal_function
     BoxLayout:
         id: box
-        size_hint_y: .8
+        size_hint_y: .9
         pos_hint: {"top": 1}
     GridLayout:
-        cols: 2
-        size_hint: (1, 0.2)
+        cols: 3
+        size_hint: (1, 0.1)
         Button:
-            text: 'Go Back'
+            text: 'Main menu'
             font_name: 'fonts/Lcd.ttf'
             font_size: '40dp'
             color: '#80ffdb'
+            halign: 'center'
+            valign: 'middle'
             on_release:
                 app.root.current = 'menu'
                 root.manager.transition.direction = 'right'
@@ -1042,7 +1060,8 @@ WindowManager:
             text: 'See Schedule'
             text_size: self.size
             font_name: 'fonts/Lcd.ttf'
-            font_size: '30dp'
+            font_size: self.width/8
+            text_size: self.size
             color: '#80ffdb'
             halign: 'center'
             valign: 'middle'
@@ -1052,6 +1071,18 @@ WindowManager:
                 app.root.current = 'see_schedule'
                 root.manager.transition.direction = 'right'
 
+        Button:
+            text: 'To Optimization'
+            font_name: 'fonts/Lcd.ttf'
+            font_size: self.width/8
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            color: '#80ffdb'
+            on_release:
+                app.root.current = 'optimize'
+                root.manager.transition.direction = 'left'
+
 
 # liczba iteracji, koszt, koszt po algorytmie, koszt po improve i pauza jak nie będzie włączonego,
 # liczba uczestników, liczba prowadzących
@@ -1060,143 +1091,191 @@ WindowManager:
     id: see_algorithm_parameters
     BoxLayout:
         orientation: 'vertical'
+        GridLayout:
+            cols: 1
+            size_hint: (1, 0.9)
 
-        BoxLayout:
-            orientation: "horizontal"
-            spacing: 15
-            Label:
-                text: 'Initial cost:'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'right'
-                valign: 'middle'
+            GridLayout:
+                cols: 5
+                size_hint: (1, 0.4)
+                spacing: 15
 
-            Label:
-                #size_hint: (0.3, 1)
-                id: first_cost
-                text: 'None'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'left'
-                valign: 'middle'
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: 15
+                    Label:
+                        text: 'Initial cost:'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-        BoxLayout:
-            orientation: "horizontal"
-            spacing: 15
-            Label:
-                text: 'Cost after optimization:'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'right'
-                valign: 'middle'
+                    Label:
+                        #size_hint: (0.3, 1)
+                        id: first_cost
+                        text: 'None'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-            Label:
-                #size_hint: (0.3, 1)
-                id: second_cost
-                text: 'None'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'left'
-                valign: 'middle'
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: 15
+                    Label:
+                        text: ''
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-        BoxLayout:
-            orientation: "horizontal"
-            spacing: 15
-            Label:
-                text: 'Cost after improvement:'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'right'
-                valign: 'middle'
+                    Label:
+                        #size_hint: (0.3, 1)
+                        text: '-->'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-            Label:
-                #size_hint: (0.3, 1)
-                id: third_cost
-                text: 'None'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'left'
-                valign: 'middle'
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: 15
+                    Label:
+                        text: 'Cost after optimization:'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-        BoxLayout:
-            orientation: "horizontal"
-            spacing: 15
-            Label:
-                text: 'Number of iterations:'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'right'
-                valign: 'middle'
+                    Label:
+                        #size_hint: (0.3, 1)
+                        id: second_cost
+                        text: 'None'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-            Label:
-                #size_hint: (0.3, 1)
-                id: num_of_iter
-                text: 'None'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'left'
-                valign: 'middle'
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: 15
+                    Label:
+                        text: ''
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-        BoxLayout:
-            orientation: "horizontal"
-            spacing: 15
-            Label:
-                text: 'Clients number:'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'right'
-                valign: 'middle'
+                    Label:
+                        #size_hint: (0.3, 1)
+                        text: '-->'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-            Label:
-                #size_hint: (0.3, 1)
-                id: clients_num
-                text: 'None'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'left'
-                valign: 'middle'
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: 15
+                    Label:
+                        text: 'Cost after improvement:'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-        BoxLayout:
-            orientation: "horizontal"
-            spacing: 15
-            Label:
-                text: 'Instructor number:'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'right'
-                valign: 'middle'
+                    Label:
+                        #size_hint: (0.3, 1)
+                        id: third_cost
+                        text: 'None'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'center'
+                        valign: 'middle'
 
-            Label:
-                #size_hint: (0.3, 1)
-                id: instructors_num
-                text: 'None'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'left'
-                valign: 'middle'
+            GridLayout:
+                cols: 1
+                size_hint: (1, 0.6)
+                spacing: 5
+                BoxLayout:
+                    orientation: "horizontal"
+                    spacing: 15
+                    Label:
+                        text: 'Number of iterations:'
+                        font_size: self.width/16
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
 
-        BoxLayout:
-            orientation: "horizontal"
-            spacing: 15
-            Label:
-                text: 'Time:'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'right'
-                valign: 'middle'
+                    Label:
+                        #size_hint: (0.3, 1)
+                        id: num_of_iter
+                        text: 'None'
+                        font_size: self.width/16
+                        text_size: self.size
+                        halign: 'left'
+                        valign: 'middle'
 
-            Label:
-                #size_hint: (0.3, 1)
-                id: alg_time
-                text: 'None'
-                font_size: self.width/16
-                text_size: self.size
-                halign: 'left'
-                valign: 'middle'
+                BoxLayout:
+                    orientation: "horizontal"
+                    spacing: 15
+                    Label:
+                        text: 'Clients number:'
+                        font_size: self.width/16
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+                    Label:
+                        #size_hint: (0.3, 1)
+                        id: clients_num
+                        text: 'None'
+                        font_size: self.width/16
+                        text_size: self.size
+                        halign: 'left'
+                        valign: 'middle'
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    spacing: 15
+                    Label:
+                        text: 'Instructor number:'
+                        font_size: self.width/16
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+                    Label:
+                        #size_hint: (0.3, 1)
+                        id: instructors_num
+                        text: 'None'
+                        font_size: self.width/16
+                        text_size: self.size
+                        halign: 'left'
+                        valign: 'middle'
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    spacing: 15
+                    Label:
+                        text: 'Time:'
+                        font_size: self.width/16
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+                    Label:
+                        #size_hint: (0.3, 1)
+                        id: alg_time
+                        text: 'None'
+                        font_size: self.width/16
+                        text_size: self.size
+                        halign: 'left'
+                        valign: 'middle'
 
         GridLayout:
             cols: 1
-            size_hint: (1, None)
+            size_hint: (1, 0.1)
             height: '100dp'
             Button:
                 text: 'Go Back'
