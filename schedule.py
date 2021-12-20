@@ -186,6 +186,8 @@ class Schedule:
         amount of money which instructor revieves for coming to the workplace
     class_renting_cost: int, default=200
         cost of renting a class (per day)
+    use_penalty_method: bool, default=False
+        if True, constrains are not absolute, but penalty function is applied
 
     Methods
     -------
@@ -207,7 +209,8 @@ class Schedule:
     def __init__(self, client_file: str = './client_data/form_answers.csv',
                  instructor_file: str = './instructor_data/instructors_info.csv',
                  class_num=1, day_num=6, time_slot_num=6, max_clients_per_training=5,
-                 ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=500):
+                 ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=500,
+                 use_penalty_method=False, penalty_for_repeated=250, penalty_for_unmatched=100):
         self.class_id = class_num
         self.day = day_num  # monday - saturday
         self.time_slot = time_slot_num
@@ -236,6 +239,11 @@ class Schedule:
         self.hour_pay = hour_pay
         self.pay_for_presence = pay_for_presence
         self.class_renting_cost = class_renting_cost
+
+        # penalty function
+        self.use_penalty_method = use_penalty_method
+        self.penalty_for_repeated = penalty_for_repeated
+        self.penalty_for_unmatched = penalty_for_unmatched
 
     def generate_random_schedule(self, greedy=False):
         """
@@ -331,20 +339,35 @@ class Schedule:
         participants_sum = 0
         instructors_hours = np.zeros(shape=(self.instructors.shape[0], self.day))
         class_per_day = np.zeros(shape=(self.class_id, self.day))
+        repeated_instructors = 0
+        unmatched_instructors = 0
+
 
         # for every lesson in solution count number of participants, instructors' hours and classrooms used
-        for c in range(current_solution.shape[0]):
-            for d in range(current_solution.shape[1]):
-                for ts in range(current_solution.shape[2]):
+
+        for d in range(current_solution.shape[1]):
+            for ts in range(current_solution.shape[2]):
+                used_instructors = list()
+                for c in range(current_solution.shape[0]):
                     if current_solution[c, d, ts] is not None:
+                        if current_solution[c, d, ts].lesson_type not in \
+                         current_solution[c, d, ts].instructor.qualifications:
+                            unmatched_instructors += 1
+                        used_instructors.append(current_solution[c, d, ts].instructor.id)
                         participants_sum += current_solution[c, d, ts].participants.shape[0]
                         instructors_hours[current_solution[c, d, ts].instructor.id, d] += 1
                         class_per_day[c, d] = 1
-        # count cost function 
-        return self.ticket_cost * participants_sum - \
+                repeated_instructors += len(used_instructors) - len(set(used_instructors))
+
+        # count cost function
+        cost = self.ticket_cost * participants_sum - \
                self.hour_pay * instructors_hours.sum() - \
                self.pay_for_presence * (instructors_hours > 0).sum() - \
                self.class_renting_cost * class_per_day.sum()
+        if self.use_penalty_method:
+            cost += unmatched_instructors * self.penalty_for_unmatched + \
+                    repeated_instructors * self.penalty_for_repeated
+        return cost
 
     def get_neighbor(self, current_solution, neighborhood_type_lst: List[str]):
         """
@@ -436,9 +459,12 @@ class Schedule:
 
                 type_of_selected_lesson = current_solution[random_not_none_id].lesson_type
 
-                available_instructors = [instructor for instructor in self.instructors if type_of_selected_lesson in
-                                         instructor.qualifications and
-                                         instructor.id != current_solution[random_not_none_id].instructor.id]
+                if self.use_penalty_method:
+                    available_instructors = self.instructors
+                else:
+                    available_instructors = [instructor for instructor in self.instructors
+                                             if type_of_selected_lesson in instructor.qualifications and
+                                             instructor.id != current_solution[random_not_none_id].instructor.id]
 
                 if len(available_instructors) == 0:
                     new_instructor = current_solution[random_not_none_id].instructor

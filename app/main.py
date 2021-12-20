@@ -70,13 +70,22 @@ class Optimize(Screen):
             'epsilon': 0.01,
             'n_iter_without_improvement': 1000,
             'greedy': False,
-            'improve_results': True}
+            'improve_results': True,
+            'use_penalty_method': False}
 
     def checkbox_click(self, instance, value, neighborhood_type):
         if value is True:
             self.parameters['neighborhood_type_lst'].append(neighborhood_type)
         else:
             self.parameters['neighborhood_type_lst'].remove(neighborhood_type)
+
+    def toggle_penalty_method(self, instance):
+        if instance.state == 'down':
+            self.parameters['use_penalty_method'] = True
+            self.ids['change_instructor_box'].active = True
+        else:
+            self.parameters['use_penalty_method'] = False
+            self.ids['change_instructor_box'].active = False
 
 
     def on_text(self, parameter, input_parameter):
@@ -95,11 +104,13 @@ class Optimize(Screen):
                       ticket_cost=ScheduleParameters.schedule_parameters['ticket_cost'],
                       hour_pay=ScheduleParameters.schedule_parameters['hour_pay'],
                       pay_for_presence=ScheduleParameters.schedule_parameters['pay_for_presence'],
-                      class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'])
+                      class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'],
+                      use_penalty_method=self.parameters['use_penalty_method'])
 
         SM.generate_random_schedule(greedy=self.parameters['greedy'])
 
         print("\nINITIAL SCHEDULE")
+        print(self.parameters['use_penalty_method'], self.parameters['neighborhood_type_lst'])
         print(SM)
         print('Initial earnings: ', SM.get_cost())
         first_cost = SM.get_cost()
