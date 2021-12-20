@@ -106,7 +106,14 @@ class Instructor:
         str
             string to be printed
         """
-        return f"id: {self.id}, qualifications: {self.qualifications}"
+        qualification_str = str()
+        for elem in self.qualifications:
+            temp = str(elem).split('.')[1].split('_')
+            converted_text = str()
+            for i in range(len(temp)):
+                converted_text += temp[i] + ' '
+            qualification_str += converted_text + '\n'
+        return f"id: {self.id}, qualifications: {qualification_str}"
 
 
 class Lesson:
@@ -290,7 +297,6 @@ class Schedule:
                     i += 1
                 else:
                     lesson_id = free_ts.pop(random.randint(0, len(free_ts) - 1))
-                    # TODO ograniczyć suwak alfy < 1
                     # TODO obsłużyć zbyt dużą liczbę zajęć - np. poprzez dodanie nowej sali
 
 
@@ -576,6 +582,7 @@ class Schedule:
         return best_cost, total_counter, all_costs
 
     def improve_results(self):
+        # TODO: dodać wyświtlanie przed i po w GUUI
         """
         Minimizes days of presence for each instructor.
         
@@ -752,14 +759,11 @@ class Schedule:
 # plt.show()
 
 
-#  TODO: - zwiększyć liczbę classroomów
-#  TODO: - poprawienie rozwiązania podczas działania algorytmu SA (przenoszenie względem prowadzących)
 #  TODO: - dodanie listy kompetencji i mniej losowe przydzielanie prowadzących do zajęć (może jako prawdopodobieństwo)
 #  TODO: - ograniczenia - chwiliowo pomijamy ograniczenie 6) i 7)
 #  TODO: - z 7) można zrobić tak, że po ułożeniu już planu sprawdzamy dla każdego użytkownika ile razy w tygodniu
 #   trenuje i jeśli jego liczba treningów jest większa niż max to przenosimy go do innej grupy. Można założyć na
 #   początku działania algorytmu limit np. 12 (zamiast 10) żeby mieć jakieś pole manewru. Takie podejście może
 #   okazać się lepsze bo nie utrudnia działania algorytmu a takich przypadków nie powinno być dużo
-#  TODO: - inaczej wybierać otoczenie - zmiana instruktorów
 #  TODO: - dodać dokumentację
 

@@ -27,6 +27,7 @@ import numpy as np
 from kivy.garden.matplotlib import FigureCanvasKivyAgg
 import matplotlib.pyplot as plt
 #matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
+import pandas as pd
 
 
 try:
@@ -51,13 +52,16 @@ class MainWindow(Screen):
     pass
 
 
-
 class Optimize(Screen):
-    # TODO: co prodram ma zrobić po skończeniu optymalizacji
     # TODO: usunąć wywoływanie opt. w schedule.py
-    # TODO: możliwość zmiany parametru greedy
     first_cost = float()
+    second_cost = float()
+    third_cost = float()
     all_costs = list()
+    num_of_iter = int()
+    clients_num = int()
+    instructors_num = int()
+
     def __init__(self, **kw):
         super().__init__(**kw)
         self.parameters = {
@@ -94,6 +98,15 @@ class Optimize(Screen):
         except ValueError:
             self.parameters[parameter] = 0
 
+    def update_algorithm_parameters(self):
+        self.manager.get_screen('see_algorithm_parameters').ids.first_cost.text = str(Optimize.first_cost) + " $"
+        self.manager.get_screen('see_algorithm_parameters').ids.second_cost.text = str(Optimize.second_cost) + " $"
+        self.manager.get_screen('see_algorithm_parameters').ids.third_cost.text = str(Optimize.third_cost) + " $"
+        self.manager.get_screen('see_algorithm_parameters').ids.num_of_iter.text = str(Optimize.num_of_iter)
+        self.manager.get_screen('see_algorithm_parameters').ids.clients_num.text = str(Optimize.clients_num)
+        self.manager.get_screen('see_algorithm_parameters').ids.instructors_num.text = str(Optimize.instructors_num)
+        self.manager.get_screen('see_algorithm_parameters').ids.alg_time.text = str(format(Optimize.alg_time, '.2f')) + " s"
+
     def start_optimization(self):
         SM = Schedule(client_file=client_file,
                       instructor_file=instructor_file,
@@ -106,8 +119,10 @@ class Optimize(Screen):
                       pay_for_presence=ScheduleParameters.schedule_parameters['pay_for_presence'],
                       class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'],
                       use_penalty_method=self.parameters['use_penalty_method'])
-
         SM.generate_random_schedule(greedy=self.parameters['greedy'])
+
+        Optimize.clients_num = pd.read_csv(client_file, sep=";").shape[0]
+        Optimize.instructors_num = pd.read_csv(instructor_file, sep=";").shape[0]
 
         print("\nINITIAL SCHEDULE")
         print(self.parameters['use_penalty_method'], self.parameters['neighborhood_type_lst'])
@@ -128,8 +143,10 @@ class Optimize(Screen):
                                                                    neighborhood_type_lst=self.parameters['neighborhood_type_lst'])
 
         Optimize.all_costs = all_costs
-
+        Optimize.num_of_iter = num_of_iter
         toc = time.time()
+
+        Optimize.alg_time = toc - tic
 
         print("\nAFTER OPTIMIZATION")
         print(SM)
@@ -137,6 +154,7 @@ class Optimize(Screen):
 
         print("Best earnings: ", best_cost)
         second_cost = best_cost
+        Optimize.second_cost = second_cost
         print("Time: ", toc - tic)
 
         if self.parameters['improve_results']:
@@ -149,6 +167,7 @@ class Optimize(Screen):
             print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
         else:
             print(f'{first_cost} $ --> {second_cost} $')
+        Optimize.third_cost = third_cost
 
         global schedule_global
         schedule_global = SM
@@ -348,6 +367,7 @@ class SeeSchedule(Screen):
         self.ids['change_class_button'].text = f"Displayed classroom id: {instance.ids['classroom_id']}"
         self.update_schedule_description()
 
+
     # Pick Classroom Popup
     def pick_classroom_popup(self):
         pick_classroom_popup = Popup(title="Pick Classroom", size_hint=(0.6, 0.6), auto_dismiss=False)
@@ -404,5 +424,3 @@ class ScheduleOrganizer(App):
 if __name__ == '__main__':
     ScheduleOrganizer().run()
 
-#TODO: Wyświetlanie wyników, wykresu
-#TODO explicit improve
