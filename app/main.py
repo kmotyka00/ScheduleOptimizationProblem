@@ -70,7 +70,7 @@ class Optimize(Screen):
             'neighborhood_type_lst': ['move_one'],
             # parameter unused by end user, moved to function call
             # 'initial_solution': False,
-            'alpha': 0.9999,
+            'alpha': 0.999,
             'initial_temp': 1000,
             'n_iter_one_temp': 50,
             'min_temp': 0.1,

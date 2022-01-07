@@ -483,7 +483,7 @@ class Schedule:
         current_solution = current_solution.reshape((self.class_id, self.day, self.time_slot))
         return current_solution
 
-    def simulated_annealing(self, alpha=0.99, initial_temp=100, n_iter_one_temp=50, min_temp=0.1,
+    def simulated_annealing(self, alpha=0.999, initial_temp=100, n_iter_one_temp=50, min_temp=0.1,
                             epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True,
                             neighborhood_type_lst=None, greedy=False):
         """
@@ -493,7 +493,7 @@ class Schedule:
         ...
         Parameters
         ----------
-        alpha: float, default=0.9999
+        alpha: float, default=0.999
             Parameter between (0, 1). Used to change pace of lowering the temperature.
             When closer to 1 temperature will decrease slower.
         initial_temp: float, default=1000
