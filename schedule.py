@@ -483,7 +483,7 @@ class Schedule:
         current_solution = current_solution.reshape((self.class_id, self.day, self.time_slot))
         return current_solution
 
-    def simulated_annealing(self, alpha=0.9999, initial_temp=1000, n_iter_one_temp=50, min_temp=0.1,
+    def simulated_annealing(self, alpha=0.99, initial_temp=100, n_iter_one_temp=50, min_temp=0.1,
                             epsilon=0.01, n_iter_without_improvement=1000, initial_solution=True,
                             neighborhood_type_lst=None, greedy=False):
         """

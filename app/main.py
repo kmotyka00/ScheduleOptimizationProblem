@@ -61,18 +61,19 @@ class Optimize(Screen):
     num_of_iter = int()
     clients_num = int()
     instructors_num = int()
-
+    SM = None
     def __init__(self, **kw):
         super().__init__(**kw)
         self.parameters = {
             'neighborhood_type_lst': ['move_one'],
-            'initial_solution': False,
-            'alpha': 0.5,
-            'initial_temp': 100,
+            # parameter unused by end user, moved to function call
+            # 'initial_solution': False,
+            'alpha': 0.9999,
+            'initial_temp': 1000,
             'n_iter_one_temp': 50,
             'min_temp': 0.1,
             'epsilon': 0.01,
-            'n_iter_without_improvement': 1000,
+            'n_iter_without_improvement': 500,
             'greedy': False,
             'improve_results': True,
             'use_penalty_method': False}
@@ -107,23 +108,28 @@ class Optimize(Screen):
         self.manager.get_screen('see_algorithm_parameters').ids.instructors_num.text = str(Optimize.instructors_num)
         self.manager.get_screen('see_algorithm_parameters').ids.alg_time.text = str(format(Optimize.alg_time, '.2f')) + " s"
 
+    def generate_initial_solution(self, force=False):
+        global schedule_global
+        if schedule_global is None or force is True:
+            schedule_global = Schedule(client_file=client_file,
+                          instructor_file=instructor_file,
+                          class_num=ScheduleParameters.schedule_parameters['class_num'],
+                          day_num=ScheduleParameters.schedule_parameters['day_num'],
+                          time_slot_num=ScheduleParameters.schedule_parameters['time_slot_num'],
+                          max_clients_per_training=ScheduleParameters.schedule_parameters['max_clients_per_training'],
+                          ticket_cost=ScheduleParameters.schedule_parameters['ticket_cost'],
+                          hour_pay=ScheduleParameters.schedule_parameters['hour_pay'],
+                          pay_for_presence=ScheduleParameters.schedule_parameters['pay_for_presence'],
+                          class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'],
+                          use_penalty_method=self.parameters['use_penalty_method'])
+            schedule_global.generate_random_schedule(greedy=self.parameters['greedy'])
+            Optimize.clients_num = pd.read_csv(client_file, sep=";").shape[0]
+            Optimize.instructors_num = pd.read_csv(instructor_file, sep=";").shape[0]
+
     def start_optimization(self):
-        SM = Schedule(client_file=client_file,
-                      instructor_file=instructor_file,
-                      class_num=ScheduleParameters.schedule_parameters['class_num'],
-                      day_num=ScheduleParameters.schedule_parameters['day_num'],
-                      time_slot_num=ScheduleParameters.schedule_parameters['time_slot_num'],
-                      max_clients_per_training=ScheduleParameters.schedule_parameters['max_clients_per_training'],
-                      ticket_cost=ScheduleParameters.schedule_parameters['ticket_cost'],
-                      hour_pay=ScheduleParameters.schedule_parameters['hour_pay'],
-                      pay_for_presence=ScheduleParameters.schedule_parameters['pay_for_presence'],
-                      class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'],
-                      use_penalty_method=self.parameters['use_penalty_method'])
-        SM.generate_random_schedule(greedy=self.parameters['greedy'])
-
-        Optimize.clients_num = pd.read_csv(client_file, sep=";").shape[0]
-        Optimize.instructors_num = pd.read_csv(instructor_file, sep=";").shape[0]
-
+        global schedule_global
+        self.generate_initial_solution()
+        SM = schedule_global
         print("\nINITIAL SCHEDULE")
         print(self.parameters['use_penalty_method'], self.parameters['neighborhood_type_lst'])
         print(SM)
@@ -168,10 +174,6 @@ class Optimize(Screen):
         else:
             print(f'{first_cost} $ --> {second_cost} $')
         Optimize.third_cost = third_cost
-
-        global schedule_global
-        schedule_global = SM
-
 
 
 class ScheduleOptions(Screen):
@@ -271,11 +273,16 @@ class SeeSchedule(Screen):
 
 
     def generate_see_schedule_layout(self):
-        self.generate_schedule_layout()
-        self.genrate_hours_layout()
-        self.genrate_days_layout()
+        # order is important, because it affects order of elements in GUI
+        if 'hours_layout' not in self.ids.bottom_part.ids:
+            self.genrate_hours_layout()
+        if 'schedule_layout' not in self.ids.bottom_part.ids:
+            self.generate_schedule_layout()
+        if 'days_layout' not in self.ids.top_bar.ids:
+            self.genrate_days_layout()
 
     def generate_schedule_layout(self):
+        schedule_layout = GridLayout(cols=ScheduleParameters.schedule_parameters['day_num'], size_hint=(0.86, 1))
         for time_slot in range(ScheduleParameters.schedule_parameters['day_num']
                                * ScheduleParameters.schedule_parameters['time_slot_num']):
             if f'Button{time_slot}' not in self.ids.keys():
@@ -292,10 +299,13 @@ class SeeSchedule(Screen):
                 button.bind(on_press=self.chceck_content)
                 button.ids['lesson'] = None
                 button.ids['lesson_time_slot'] = None
-                self.ids.schedule_layout.add_widget(button)
+                schedule_layout.add_widget(button)
                 self.ids[f'Button{time_slot}'] = button
+        self.ids.bottom_part.ids[f'schedule_layout'] = schedule_layout
+        self.ids.bottom_part.add_widget(schedule_layout)
 
     def genrate_hours_layout(self):
+        hours_layout = GridLayout(rows=ScheduleParameters.schedule_parameters['time_slot_num'], size_hint=(0.14, 1))
         for time_slot in range(ScheduleParameters.schedule_parameters['time_slot_num']):
             if f'Button_hours{time_slot}' not in self.ids.keys():
                 button = Button(text=f'{time_slot}', halign='center', valign='center')
@@ -305,11 +315,15 @@ class SeeSchedule(Screen):
                 button.bind(width=set_font_size(8))
                 # self.text_size: self.size
                 button.bind(size=set_text_size)
-                self.ids.hours_layout.add_widget(button)
+                hours_layout.add_widget(button)
                 self.ids[f'Button_hours{time_slot}'] = button
+        self.ids.bottom_part.ids[f'hours_layout'] = hours_layout
+        self.ids.bottom_part.add_widget(hours_layout)
 
     def genrate_days_layout(self):
         days = ['Monday', 'Tusday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        #                                                                              +1 is for displayed class button
+        days_layout = GridLayout(cols=ScheduleParameters.schedule_parameters['day_num']+1, size_hint=(0.86, 1))
         for day in range(ScheduleParameters.schedule_parameters['day_num']):
             if f'Button_days{day}' not in self.ids.keys():
                 button = Button(text=f'{days[day]}', halign='center', valign='center')
@@ -322,8 +336,10 @@ class SeeSchedule(Screen):
                 button.bind(width=set_font_size(8))
                 # self.text_size: self.size
                 button.bind(size=set_text_size)
-                self.ids.days_layout.add_widget(button)
+                days_layout.add_widget(button)
                 self.ids[f'Button_days{day}'] = button
+        self.ids.top_bar.ids[f'days_layout'] = days_layout
+        self.ids.top_bar.add_widget(days_layout)
 
     # Error Popup
     my_error_popup = Popup(title="Error", size_hint=(None, None), size=(300, 200), auto_dismiss=False)

@@ -61,6 +61,7 @@ WindowManager:
                 font_size: self.width/12
                 color: '#80ffdb'
                 on_release:
+                    root.manager.get_screen('optimize').generate_initial_solution()
                     root.manager.get_screen('see_schedule').generate_see_schedule_layout()
                     root.manager.get_screen('see_schedule').update_schedule_description()
                     app.root.current = 'see_schedule'
@@ -437,6 +438,7 @@ WindowManager:
                 halign: 'center'
                 valign: 'middle'
                 on_release:
+                    root.manager.get_screen('optimize').generate_initial_solution()
                     root.manager.get_screen('see_schedule').generate_see_schedule_layout()
                     root.manager.get_screen('see_schedule').update_schedule_description()
                     app.root.current = 'see_schedule'
@@ -973,6 +975,7 @@ WindowManager:
         GridLayout:
             rows: 2
             GridLayout:
+                id: top_bar
                 cols: 2
                 size_hint: 1, 0.14
                 Button:
@@ -987,24 +990,11 @@ WindowManager:
                     valign: 'center'
                     on_release: root.pick_classroom_popup()
 
-                GridLayout:
-                    id: days_layout
-                    size_hint: 0.86, 1
-                    cols: 6
 
             GridLayout:
+                id: bottom_part
                 size_hint: 1, 0.86
                 cols: 2
-
-                GridLayout:
-                    id: hours_layout
-                    size_hint: 0.14, 1
-                    rows: 6
-
-                GridLayout:
-                    id: schedule_layout
-                    size_hint: 0.86, 1
-                    cols: 6
 
         GridLayout:
             cols: 3
@@ -1079,6 +1069,7 @@ WindowManager:
             halign: 'center'
             valign: 'middle'
             on_release:
+                root.manager.get_screen('optimize').generate_initial_solution()
                 root.manager.get_screen('see_schedule').generate_see_schedule_layout()
                 root.manager.get_screen('see_schedule').update_schedule_description()
                 app.root.current = 'see_schedule'
