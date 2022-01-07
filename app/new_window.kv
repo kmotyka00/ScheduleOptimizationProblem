@@ -175,8 +175,61 @@ WindowManager:
                 size_hint: 1, 0.6
                 padding: 20
                 spacing: 20
-                cols: 3
                 rows: 2
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint: 1, 0.2
+                    spacing: 10
+
+                    Label:
+                        # size_hint: 0.5, 1
+                        # pos_hint: {"x": 1, "y": 0.5}
+                        text: 'Penalty for repeated:'
+                        font_size: self.width/8
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+
+                    TextInput:
+                        id: input_penalty_for_repeated
+                        size_hint: 0.5, 0.35
+                        pos_hint: {"center_y": 0.5}
+                        text: str(format(root.parameters['penalty_for_repeated'], '.0f'))
+                        text_size: self.size
+                        font_size: self.width/4
+                        halign: "center"
+                        multiline: False
+                        on_text:
+                            root.on_text(parameter='penalty_for_repeated', input_parameter=root.ids.input_initial_temp.text)
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint: 1, 0.2
+                    spacing: 10
+
+                    Label:
+                        # size_hint: 0.5, 1
+                        # pos_hint: {"x": 1, "y": 0.5}
+                        text: 'Penalty for unmatched:'
+                        font_size: self.width/6
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+
+
+                    TextInput:
+                        id: input_penalty_for_unmatched
+                        size_hint: 0.5, 0.35
+                        pos_hint: {"center_y": 0.5}
+                        text: str(format(root.parameters['penalty_for_unmatched'], '.0f'))
+                        text_size: self.size
+                        font_size: self.width/4
+                        halign: "center"
+                        multiline: False
+                        on_text:
+                            root.on_text(parameter='penalty_for_unmatched', input_parameter=root.ids.input_initial_temp.text)
 
                 BoxLayout:
                     orientation: "horizontal"
@@ -324,13 +377,13 @@ WindowManager:
                             # size_hint: 0.5, 1
                             # pos_hint: {"x": 0, "center_y":0.5}
                             text: 'Squeeze initial solution:'
-                            font_size: self.width/8
+                            font_size: self.width/7
                             text_size: self.size
                             halign: 'right'
                             valign: 'middle'
 
                         CheckBox:
-                            on_active: root.parameters['greedy'] = True
+                            on_active: root.checkbox_greedy()
 
                     BoxLayout:
                         orientation: "horizontal"
@@ -341,13 +394,14 @@ WindowManager:
                             # size_hint: 0.5, 1
                             # pos_hint: {"x": 0, "center_y":0.5}
                             text: 'Improve results:'
-                            font_size: self.width/8
+                            font_size: self.width/7
                             text_size: self.size
                             halign: 'right'
                             valign: 'middle'
 
                         CheckBox:
-                            on_active: root.parameters['improve_results'] = True
+                            active: True
+                            on_active: root.checkbox_improve_results()
 
 
 
@@ -1094,6 +1148,8 @@ WindowManager:
             color: '#ff1100'
             on_release:
                 root.reset_solution()
+                root.manager.get_screen('see_schedule').generate_see_schedule_layout()
+                root.manager.get_screen('see_schedule').update_schedule_description()
                 app.root.current = 'see_schedule'
                 root.manager.transition.direction = 'left'
 

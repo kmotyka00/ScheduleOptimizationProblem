@@ -71,14 +71,28 @@ class Optimize(Screen):
             # parameter unused by end user, moved to function call
             # 'initial_solution': False,
             'alpha': 0.999,
-            'initial_temp': 1000,
+            'initial_temp': 100,
             'n_iter_one_temp': 50,
             'min_temp': 0.1,
             'epsilon': 0.01,
-            'n_iter_without_improvement': 500,
+            'n_iter_without_improvement': 200,
             'greedy': False,
             'improve_results': True,
+            'penalty_for_repeated': 250,
+            'penalty_for_unmatched': 100,
             'use_penalty_method': False}
+
+    def checkbox_greedy(self, instance, value):
+        if value is True:
+            self.parameters['greedy'] = True
+        else:
+            self.parameters['greedy'] = False
+
+    def checkbox_improve_results(self, instance, value):
+        if value is True:
+            self.parameters['improve_results'] = True
+        else:
+            self.parameters['improve_results'] = False
 
     def checkbox_click(self, instance, value, neighborhood_type):
         if value is True:
@@ -124,7 +138,10 @@ class Optimize(Screen):
                           hour_pay=ScheduleParameters.schedule_parameters['hour_pay'],
                           pay_for_presence=ScheduleParameters.schedule_parameters['pay_for_presence'],
                           class_renting_cost=ScheduleParameters.schedule_parameters['class_renting_cost'],
-                          use_penalty_method=self.parameters['use_penalty_method'])
+                          use_penalty_method=self.parameters['use_penalty_method'],
+                          penalty_for_repeated=self.parameters['penalty_for_repeated'],
+                          penalty_for_unmatched=self.parameters['penalty_for_unmatched'])
+
             schedule_global.generate_random_schedule(greedy=self.parameters['greedy'])
             Optimize.clients_num = pd.read_csv(client_file, sep=";").shape[0]
             Optimize.instructors_num = pd.read_csv(instructor_file, sep=";").shape[0]
@@ -369,6 +386,7 @@ class SeeSchedule(Screen):
                     converted_text = str()
                     for i in range(len(new_text)):
                         converted_text += new_text[i] + ' '
+                    converted_text += f" [{lesson.instructor.id}]"
                     # make button kind of a parent for lesson
                     self.ids[f'Button{time_slot}'].ids['lesson'] = lesson
                     self.ids[f'Button{time_slot}'].ids['lesson_time_slot'] = \

@@ -1,5 +1,3 @@
-
-
 import numpy as np
 import pandas as pd
 from typing import List
@@ -26,7 +24,6 @@ class LessonType(Enum):
     CITY_PUMP = 7
     STRETCHING = 8
     YOGA = 9
-
 
 
 class Client:
@@ -299,7 +296,6 @@ class Schedule:
                     lesson_id = free_ts.pop(random.randint(0, len(free_ts) - 1))
                     # TODO obsłużyć zbyt dużą liczbę zajęć - np. poprzez dodanie nowej sali
 
-
                 # interval in vector self.schedule which represents a break between same time slots
                 # and days in different classes
                 interval = self.day * self.time_slot
@@ -348,7 +344,6 @@ class Schedule:
         repeated_instructors = 0
         unmatched_instructors = 0
 
-
         # for every lesson in solution count number of participants, instructors' hours and classrooms used
 
         for d in range(current_solution.shape[1]):
@@ -357,7 +352,7 @@ class Schedule:
                 for c in range(current_solution.shape[0]):
                     if current_solution[c, d, ts] is not None:
                         if current_solution[c, d, ts].lesson_type not in \
-                         current_solution[c, d, ts].instructor.qualifications:
+                                current_solution[c, d, ts].instructor.qualifications:
                             unmatched_instructors += 1
                         used_instructors.append(current_solution[c, d, ts].instructor.id)
                         participants_sum += current_solution[c, d, ts].participants.shape[0]
@@ -478,7 +473,6 @@ class Schedule:
                     new_instructor = random.choice(available_instructors)
 
                 current_solution[random_not_none_id].instructor = new_instructor
-
 
         current_solution = current_solution.reshape((self.class_id, self.day, self.time_slot))
         return current_solution
@@ -605,9 +599,9 @@ class Schedule:
             # loop for each instructor
             for instructor in self.instructors:
 
-                # pick all trainings thought by instructor
+                # pick all trainings taught by instructor
                 # in format
-                # [day, list of timeslots of lessons thought by instructor, list of timeslots free in that day]
+                # [day, list of timeslots of lessons taught by instructor, list of timeslots free in that day, class]
                 trainings = list()
                 for c in range(self.schedule.shape[0]):
                     for d in range(self.schedule.shape[1]):
@@ -620,75 +614,92 @@ class Schedule:
                             else:
                                 free_ts.append(ts)
                         if len(timeslots) > 0:
-                            trainings.append([d, timeslots, free_ts])
+                            trainings.append([d, timeslots, free_ts, c])
 
-                    # sorting trainings by number of lessons thought by instructor in that day
-                    trainings = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
+                # sorting trainings by number of lessons taught by instructor in that day
+                trainings = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
 
-                    # for each day check if trainings can be reassigned
-                    # to some day with more trainings thought by that instructor
-                    for i in range(len(trainings) - 1):
-                        for j in range(i + 1, len(trainings)):
-                            timeslots_taken = list()
-                            changed = False
-                            # check if lessons from trainings[i] can be reassigned
-                            # to the day represented by trainings[j]
-                            if len(trainings[i][1]) <= len(trainings[j][2]):
-                                for ts_iter in range(len(trainings[i][1])):
-                                    # reassign
-                                    self.schedule[c, trainings[j][0], trainings[j][2][ts_iter]] = \
-                                        self.schedule[c, trainings[i][0], trainings[i][1][ts_iter]]
+                # for each day check if trainings can be reassigned
+                # to some day with more trainings thought by that instructor
+                for i in range(len(trainings) - 1):
+                    for j in range(i + 1, len(trainings)):
+                        timeslots_taken = list()
+                        changed = False
+                        REASSIGNMENT_INVALID_FLAG = False
+                        # check if lessons from trainings[i] can be reassigned
+                        # to the day represented by trainings[j]
+                        if len(trainings[i][1]) <= len(trainings[j][2]):
+                            for ts_iter in range(len(trainings[i][1])):
+                                for c in range(self.schedule.shape[0]):
+                                    if self.schedule[c, trainings[j][0], trainings[j][2][ts_iter]] is not None:
+                                        if self.schedule[c, trainings[j][0], trainings[j][2][ts_iter]].instructor.id \
+                                                == instructor.id:
+                                            REASSIGNMENT_INVALID_FLAG = True
+                                if REASSIGNMENT_INVALID_FLAG:
+                                    break
+                                # reassign
+                                self.schedule[trainings[j][3], trainings[j][0], trainings[j][2][ts_iter]] = \
+                                    self.schedule[trainings[i][3], trainings[i][0], trainings[i][1][ts_iter]]
 
-                                    self.schedule[c, trainings[i][0], trainings[i][1][ts_iter]] = None
-                                    # add to taken sluts in j
-                                    trainings[j][1].append(trainings[j][2][ts_iter])
-                                    # add to free slots in i
-                                    trainings[i][2].append(trainings[i][1][ts_iter])
-                                    # memorize to delete from free in j
-                                    timeslots_taken.append(trainings[j][2][ts_iter])
+                                self.schedule[trainings[i][3], trainings[i][0], trainings[i][1][ts_iter]] = None
+                                # add to taken sluts in j
+                                trainings[j][1].append(trainings[j][2][ts_iter])
+                                # add to free slots in i
+                                trainings[i][2].append(trainings[i][1][ts_iter])
+                                # memorize to delete from free in j
+                                timeslots_taken.append(trainings[j][2][ts_iter])
 
-                                    # mark that changes have been made
-                                    changed = True
+                                # mark that changes have been made
+                                changed = True
 
+                            if not REASSIGNMENT_INVALID_FLAG:
                                 # delete memorized slots from free in j
                                 for ts_iter in timeslots_taken:
                                     trainings[j][2].remove(ts_iter)
                                 # clear list of taken slots in i
                                 trainings[i][1] = []
 
-                            # if previous statement is untrue check if opposite reassignment can be performed,
-                            # i. e. check if lessons from trainings[j] can be reassigned
-                            # to the day represented by trainings[i]
-                            elif len(trainings[i][2]) > len(trainings[j][1]):
-                                for ts_iter in range(len(trainings[j][1])):
-                                    self.schedule[c, trainings[i][0], trainings[i][2][ts_iter]] = \
-                                        self.schedule[c, trainings[j][0], trainings[j][1][ts_iter]]
+                        # if previous statement is untrue check if opposite reassignment can be performed,
+                        # i. e. check if lessons from trainings[j] can be reassigned
+                        # to the day represented by trainings[i]
+                        elif len(trainings[i][2]) > len(trainings[j][1]):
+                            for ts_iter in range(len(trainings[j][1])):
+                                for c in range(self.schedule.shape[0]):
+                                    if self.schedule[c, trainings[i][0], trainings[i][2][ts_iter]] is not None:
+                                        if self.schedule[c, trainings[i][0], trainings[i][2][ts_iter]].instructor.id \
+                                                    == instructor.id:
+                                            REASSIGNMENT_INVALID_FLAG = True
+                                if REASSIGNMENT_INVALID_FLAG:
+                                    break
+                                self.schedule[trainings[i][3], trainings[i][0], trainings[i][2][ts_iter]] = \
+                                    self.schedule[trainings[j][3], trainings[j][0], trainings[j][1][ts_iter]]
 
-                                    self.schedule[c, trainings[j][0], trainings[j][1][ts_iter]] = None
-                                    # add to taken slots in i
-                                    trainings[i][1].append(trainings[i][2][ts_iter])
-                                    # add to free sluts in j
-                                    trainings[j][2].append(trainings[j][1][ts_iter])
-                                    # memorize to delete from free in i
-                                    timeslots_taken.append(trainings[i][2][ts_iter])
+                                self.schedule[trainings[j][3], trainings[j][0], trainings[j][1][ts_iter]] = None
+                                # add to taken slots in i
+                                trainings[i][1].append(trainings[i][2][ts_iter])
+                                # add to free sluts in j
+                                trainings[j][2].append(trainings[j][1][ts_iter])
+                                # memorize to delete from free in i
+                                timeslots_taken.append(trainings[i][2][ts_iter])
 
-                                    # mark that changes have been made
-                                    changed = True
+                                # mark that changes have been made
+                                changed = True
 
+                            if not REASSIGNMENT_INVALID_FLAG:
                                 # delete memorized slots from free in i
                                 for ts_iter in timeslots_taken:
                                     trainings[i][2].remove(ts_iter)
                                     # clear list of taken slots in i
                                 trainings[j][1] = []
 
-                            # if changes have been made
-                            if changed:
-                                # sort trainings to keep ascending order of
-                                # number of lessons thought by instructor in that day
-                                trainings = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
-                                # go to next iteration of i - next iterations for that i are unnecessary,
-                                # because trainings[i] have been reassigned
-                                break
+                        # if changes have been made
+                        if changed:
+                            # sort trainings to keep ascending order of
+                            # number of lessons thought by instructor in that day
+                            trainings = [v for v in sorted(trainings, key=lambda item: len(item[1]))]
+                            # go to next iteration of i - next iterations for that i are unnecessary,
+                            # because trainings[i] have been reassigned
+                            break
 
     def __str__(self):
         """
@@ -766,4 +777,3 @@ class Schedule:
 #   początku działania algorytmu limit np. 12 (zamiast 10) żeby mieć jakieś pole manewru. Takie podejście może
 #   okazać się lepsze bo nie utrudnia działania algorytmu a takich przypadków nie powinno być dużo
 #  TODO: - dodać dokumentację
-
