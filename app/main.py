@@ -22,6 +22,7 @@ import threading
 from schedule import Schedule
 import time
 import glob
+import copy
 
 import numpy as np
 from kivy.garden.matplotlib import FigureCanvasKivyAgg
@@ -46,6 +47,7 @@ except IndexError:
 
 # global variable
 schedule_global = None
+initial_solution = None
 
 
 class MainWindow(Screen):
@@ -110,6 +112,7 @@ class Optimize(Screen):
 
     def generate_initial_solution(self, force=False):
         global schedule_global
+        global initial_solution
         if schedule_global is None or force is True:
             schedule_global = Schedule(client_file=client_file,
                           instructor_file=instructor_file,
@@ -125,6 +128,7 @@ class Optimize(Screen):
             schedule_global.generate_random_schedule(greedy=self.parameters['greedy'])
             Optimize.clients_num = pd.read_csv(client_file, sep=";").shape[0]
             Optimize.instructors_num = pd.read_csv(instructor_file, sep=";").shape[0]
+            initial_solution = copy.deepcopy(schedule_global)
 
     def start_optimization(self):
         global schedule_global
@@ -422,6 +426,11 @@ class GoalFunction(Screen):
         plt.xlabel('Number of iterations')
         plt.ylabel('Earnings [$]')
         box.add_widget(FigureCanvasKivyAgg(plt.gcf()))
+
+    def reset_solution(self):
+        global initial_solution
+        global schedule_global
+        schedule_global = copy.deepcopy(initial_solution)
 
 class SeeAlgorithmParameters(Screen):
     pass

@@ -147,7 +147,7 @@ WindowManager:
                         size_hint: 0.05, 0.35
                         pos_hint: {"x": 0.2, "center_y":0.5}
                         # text: str(format(root.parameters['alpha'], '.3f')) ciekawe czemu tak się nie aktualizuje
-                        text: str(format(slider_alpha.value, '.3f'))
+                        text: str(format(slider_alpha.value, '.4f'))
                         text_size: self.size
                         font_size: self.width / 4
                         halign: "center"
@@ -868,9 +868,6 @@ WindowManager:
                         root.on_text(parameter='class_renting_cost', input_parameter=root.ids.class_renting_cost.text)
 
 
-
-
-
         BoxLayout:
             orientation: 'horizontal'
             size_hint: (1, 0.15)
@@ -884,7 +881,7 @@ WindowManager:
                 halign: 'center'
                 valign: 'middle'
                 on_release:
-                    app.root.current = 'menu'
+                    app.root.current = 'schedule options'
                     root.manager.transition.direction = 'right'
 
 
@@ -1046,7 +1043,7 @@ WindowManager:
         size_hint_y: .9
         pos_hint: {"top": 1}
     GridLayout:
-        cols: 3
+        rows: 1
         size_hint: (1, 0.1)
         Button:
             text: 'Main menu'
@@ -1085,6 +1082,19 @@ WindowManager:
             color: '#80ffdb'
             on_release:
                 app.root.current = 'optimize'
+                root.manager.transition.direction = 'left'
+
+        Button:
+            text: 'Reset solution'
+            font_name: 'fonts/Lcd.ttf'
+            font_size: self.width/8
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            color: '#ff1100'
+            on_release:
+                root.reset_solution()
+                app.root.current = 'see_schedule'
                 root.manager.transition.direction = 'left'
 
 
