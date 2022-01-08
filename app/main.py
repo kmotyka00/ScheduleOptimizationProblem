@@ -243,7 +243,18 @@ class ScheduleParameters(Screen):
             ScheduleParameters.schedule_parameters[parameter] = int(input_parameter)
         except ValueError:
             ScheduleParameters.schedule_parameters[parameter] = 0
+        global schedule_global
+
+        if schedule_global is not None:
+            setattr(schedule_global, parameter, ScheduleParameters.schedule_parameters[parameter])
+            setattr(initial_solution, parameter, ScheduleParameters.schedule_parameters[parameter])
+
         print(ScheduleParameters.schedule_parameters['ticket_cost'])
+
+    def update_text_input_fields(self):
+        global schedule_global
+        for parameter in ScheduleParameters.schedule_parameters:
+            self.ids[parameter].text = str(getattr(schedule_global, parameter))
 
 class AboutOrganizer(Screen):
     def github_button_on(self):
@@ -449,6 +460,16 @@ class GoalFunction(Screen):
         global initial_solution
         global schedule_global
         schedule_global = copy.deepcopy(initial_solution)
+        if initial_solution is not None:
+            ScheduleParameters.schedule_parameters = {'class_num': initial_solution.class_num,
+                                                      'day_num': initial_solution.day_num,
+                                                      'time_slot_num': initial_solution.time_slot_num,
+                                                      'max_clients_per_training': initial_solution.max_clients_per_training,
+                                                      'ticket_cost': initial_solution.ticket_cost,
+                                                      'hour_pay': initial_solution.hour_pay,
+                                                      'pay_for_presence': initial_solution.pay_for_presence,
+                                                      'class_renting_cost': initial_solution.class_renting_cost}
+        ScheduleParameters.update_text_input_fields(self.manager.get_screen('schedule_parameters'))
 
 class SeeAlgorithmParameters(Screen):
     pass

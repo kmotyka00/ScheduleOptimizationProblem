@@ -215,9 +215,9 @@ class Schedule:
                  class_num=1, day_num=6, time_slot_num=6, max_clients_per_training=5,
                  ticket_cost=40, hour_pay=50, pay_for_presence=50, class_renting_cost=500,
                  use_penalty_method=False, penalty_for_repeated=250, penalty_for_unmatched=100):
-        self.class_id = class_num
-        self.day = day_num  # monday - saturday
-        self.time_slot = time_slot_num
+        self.class_num = class_num
+        self.day_num = day_num  # monday - saturday
+        self.time_slot_num = time_slot_num
         self.max_clients_per_training = max_clients_per_training
 
         self.clients = list()
@@ -235,8 +235,8 @@ class Schedule:
                                                 instructor['Lesson_Types'].split(sep=" ")]))
         self.instructors = np.array(self.instructors)  # lista na początku żeby móc appendować na essie
         self.schedule = np.array([None for x in
-                                  range(self.class_id * self.day * self.time_slot)])
-        self.schedule = self.schedule.reshape((self.class_id, self.day, self.time_slot))
+                                  range(self.class_num * self.day_num * self.time_slot_num)])
+        self.schedule = self.schedule.reshape((self.class_num, self.day_num, self.time_slot_num))
 
         # economy
         self.ticket_cost = ticket_cost
@@ -298,7 +298,7 @@ class Schedule:
 
                 # interval in vector self.schedule which represents a break between same time slots
                 # and days in different classes
-                interval = self.day * self.time_slot
+                interval = self.day_num * self.time_slot_num
 
                 # iterating over same days and time slots in different classes
                 for ts in range(lesson_id % interval, self.schedule.shape[0], interval):
@@ -316,7 +316,7 @@ class Schedule:
                 self.schedule[lesson_id] = Lesson(instructor, lesson_type, participants)
 
         # reshaping self.schedule back to matrix
-        self.schedule = self.schedule.reshape((self.class_id, self.day, self.time_slot))
+        self.schedule = self.schedule.reshape((self.class_num, self.day_num, self.time_slot_num))
 
     def get_cost(self, current_solution=None):
         """
@@ -339,8 +339,8 @@ class Schedule:
             current_solution = self.schedule
 
         participants_sum = 0
-        instructors_hours = np.zeros(shape=(self.instructors.shape[0], self.day))
-        class_per_day = np.zeros(shape=(self.class_id, self.day))
+        instructors_hours = np.zeros(shape=(self.instructors.shape[0], self.day_num))
+        class_per_day = np.zeros(shape=(self.class_num, self.day_num))
         repeated_instructors = 0
         unmatched_instructors = 0
 
@@ -419,17 +419,17 @@ class Schedule:
 
             if neighborhood_type == 'move_to_most_busy' or neighborhood_type == 'swap_with_most_busy':
                 # reshaping current_solution to make sure it's a matrix
-                current_solution = current_solution.reshape((self.class_id, self.day, self.time_slot))
+                current_solution = current_solution.reshape((self.class_num, self.day_num, self.time_slot_num))
 
                 most_busy = None
                 most_trainings = 0
                 least_busy = None
-                least_trainings = self.time_slot
+                least_trainings = self.time_slot_num
                 for c in range(self.schedule.shape[0]):
                     for d in range(self.schedule.shape[1]):
                         trainings_num = np.count_nonzero(current_solution[c, d, :] != None)
                         if neighborhood_type == 'move_to_most_busy':
-                            condition = most_trainings <= trainings_num < self.time_slot
+                            condition = most_trainings <= trainings_num < self.time_slot_num
                         else:
                             condition = most_trainings <= trainings_num
 
@@ -474,7 +474,7 @@ class Schedule:
 
                 current_solution[random_not_none_id].instructor = new_instructor
 
-        current_solution = current_solution.reshape((self.class_id, self.day, self.time_slot))
+        current_solution = current_solution.reshape((self.class_num, self.day_num, self.time_slot_num))
         return current_solution
 
     def simulated_annealing(self, alpha=0.999, initial_temp=100, n_iter_one_temp=50, min_temp=0.1,
