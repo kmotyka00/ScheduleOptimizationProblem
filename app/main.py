@@ -192,9 +192,10 @@ class Optimize(Screen):
 
             third_cost = SM.get_cost()
             print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
+            Optimize.third_cost = third_cost
         else:
             print(f'{first_cost} $ --> {second_cost} $')
-        Optimize.third_cost = third_cost
+
 
 
 class ScheduleOptions(Screen):
@@ -264,7 +265,6 @@ class AboutOrganizer(Screen):
         self.ids.github_button_img.source = 'images/GitHub-Mark-Light-120px-plus.png'
         webbrowser.open('https://github.com/kmotyka00/ScheduleOptimizationProblem')
 
-
 # Functions to enable assignment
 # self.font_size: self.width / 8
 def set_font_size(font_size_divider, *args, **kwargs):
@@ -272,11 +272,9 @@ def set_font_size(font_size_divider, *args, **kwargs):
         instance.font_size = value / font_size_divider
     return wrap
 
-
 # self.text_size: self.size
 def set_text_size(instance, value):
     instance.text_size = value
-
 
 class SeeSchedule(Screen):
     classroom_displayed = 0
@@ -302,7 +300,6 @@ class SeeSchedule(Screen):
         popup_content.add_widget(Button(text='Close', size_hint=(1, 0.2), on_press=lesson_content_popup.dismiss))
         lesson_content_popup.content = popup_content
         return lesson_content_popup.open()
-
 
     def generate_see_schedule_layout(self):
         # order is important, because it affects order of elements in GUI
@@ -440,9 +437,6 @@ class SeeSchedule(Screen):
         pick_classroom_popup.open()
 
 
-
-
-
 class GoalFunction(Screen):
     box = None
 
@@ -477,13 +471,11 @@ class SeeAlgorithmParameters(Screen):
 class WindowManager(ScreenManager):
     pass
 
-
 kv = Builder.load_file('new_window.kv')
 
 class ScheduleOrganizer(App):
     def build(self):
         return kv
-
 
 if __name__ == '__main__':
     ScheduleOrganizer().run()

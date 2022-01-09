@@ -383,7 +383,7 @@ WindowManager:
                             valign: 'middle'
 
                         CheckBox:
-                            on_active: root.checkbox_greedy()
+                            on_active: root.checkbox_greedy(self, self.active)
 
                     BoxLayout:
                         orientation: "horizontal"
@@ -401,7 +401,7 @@ WindowManager:
 
                         CheckBox:
                             active: True
-                            on_active: root.checkbox_improve_results()
+                            on_active: root.checkbox_improve_results(self, self.active)
 
 
 
@@ -601,6 +601,7 @@ WindowManager:
                 color: '#80ffdb'
                 size_hint: (1, 1)
                 on_release:
+                    root.manager.get_screen('optimize').generate_initial_solution(force=True)
                     app.root.current = 'menu'
                     root.manager.transition.direction = 'right'
 
