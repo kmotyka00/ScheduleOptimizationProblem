@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 
 
 class LessonType(Enum):
-    """ 
+    """
     Class enumerating lesson types,
     enumeration numbers are important,
-    because they are used in a questionnaire for customers 
+    because they are used in a questionnaire for customers
     """
     CELLULITE_KILLER = 0
     ZUMBA = 1
@@ -366,7 +366,7 @@ class Schedule:
                self.pay_for_presence * (instructors_hours > 0).sum() - \
                self.class_renting_cost * class_per_day.sum()
         if self.use_penalty_method:
-            cost += unmatched_instructors * self.penalty_for_unmatched + \
+            cost -= unmatched_instructors * self.penalty_for_unmatched + \
                     repeated_instructors * self.penalty_for_repeated
         return cost
 
@@ -391,6 +391,7 @@ class Schedule:
         np.array
             Generated neighbor.
         """
+        # TODO uwzględnić ograniczenia
         for neighborhood_type in neighborhood_type_lst:
             if neighborhood_type == 'move_one' or neighborhood_type == 'move_two':
                 # reshaping current_solution to make sure it's a matrix

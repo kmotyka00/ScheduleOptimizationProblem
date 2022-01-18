@@ -1049,7 +1049,7 @@ WindowManager:
                 cols: 2
 
         GridLayout:
-            cols: 3
+            rows: 1
             size_hint: (1, 0.1)
             Button:
                 text: 'Main menu'
@@ -1075,6 +1075,18 @@ WindowManager:
                 on_release:
                     root.manager.get_screen('goal_function').draw_plot()
                     app.root.current = 'goal_function'
+                    root.manager.transition.direction = 'right'
+
+            Button:
+                text: 'Schedule parameters'
+                font_name: 'fonts/Lcd.ttf'
+                font_size: self.width/8
+                text_size: self.size
+                color: '#80ffdb'
+                halign: 'center'
+                valign: 'middle'
+                on_release:
+                    app.root.current = 'schedule_parameters'
                     root.manager.transition.direction = 'right'
 
             Button:
