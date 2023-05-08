@@ -21,10 +21,10 @@ Check the optimization progress:
 And see the algorithm overview:
 ![image](https://user-images.githubusercontent.com/61949638/236830780-8b4f2687-e57c-46e9-9bb9-e195b8595165.png)
 
-And see the result schedule:
+And see the result schedule in a nice shape:
 ![image](https://user-images.githubusercontent.com/61949638/236828770-f34250b1-dae8-4860-ba66-6012fd0e20f8.png)
 
-If you want to get the details of the class you can just click on a time slot of your interest and check the instructor id, qualifications and the participants:
+If you want to get the details of the class you can just click on a time slot of your interest:
 ![image](https://user-images.githubusercontent.com/61949638/236829028-ab7753da-7ffe-43b7-948f-6b84adaacc10.png)
 
 If you want to learn more about our app feel free to download the code, in requirements.txt you can find all the needed libraries to run the code.
