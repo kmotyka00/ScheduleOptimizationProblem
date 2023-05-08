@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+
 from kivy.app import App
 from kivy.metrics import cm
 from kivy.properties import StringProperty, BooleanProperty
@@ -14,11 +15,12 @@ from kivy.uix.widget import Widget
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty
-import kivy.clock
 
 import webbrowser
 import pathlib
-import threading
+
+import sys
+sys.path.append(".")
 from schedule import Schedule
 import time
 import glob
@@ -32,14 +34,15 @@ import pandas as pd
 
 
 try:
-    client_file = glob.glob('../client_data/*.csv')[0]
+    client_file = glob.glob('client_data/*.csv')[0]
+    print(client_file)
 # When ther is no such file the list is empty and we get index error,
 # which we try to capture
 except IndexError:
     client_file = str()
 
 try:
-    instructor_file = glob.glob('../instructor_data/*.csv')[0]
+    instructor_file = glob.glob('instructor_data/*.csv')[0]
 # When ther is no such file the list is empty and we get index error,
 # which we try to capture
 except IndexError:

@@ -222,14 +222,14 @@ class Schedule:
 
         self.clients = list()
         df = pd.read_csv(client_file, sep=";")
-        for index, client in df.iterrows():
+        for _, client in df.iterrows():
             self.clients.append(Client(client['Client_ID'],
                                        [LessonType(int(elem)) for elem in client['Lesson_Types'].split(sep=" ")]))
         self.clients = np.array(self.clients)
 
         self.instructors = list()
         df = pd.read_csv(instructor_file, sep=";")
-        for index, instructor in df.iterrows():
+        for _, instructor in df.iterrows():
             self.instructors.append(Instructor(instructor['Instructor_ID'],
                                                [LessonType(int(elem)) for elem in
                                                 instructor['Lesson_Types'].split(sep=" ")]))
@@ -294,20 +294,20 @@ class Schedule:
                     i += 1
                 else:
                     lesson_id = free_ts.pop(random.randint(0, len(free_ts) - 1))
-                    # TODO obsłużyć zbyt dużą liczbę zajęć - np. poprzez dodanie nowej sali
+                    # TODO handle if there are more lessons than available time slots (e.g. add more rooms)
 
                 # interval in vector self.schedule which represents a break between same time slots
                 # and days in different classes
                 interval = self.day_num * self.time_slot_num
 
                 # iterating over same days and time slots in different classes
-                for ts in range(lesson_id % interval, self.schedule.shape[0], interval):
+                for time_slot in range(lesson_id % interval, self.schedule.shape[0], interval):
 
                     # checking if lesson is taking place 
-                    if self.schedule[ts] != None:
-                        if self.schedule[ts].instructor.id in all_instructors.keys():
+                    if self.schedule[time_slot] is not None:
+                        if self.schedule[time_slot].instructor.id in all_instructors.keys():
                             # removing inaccessible instructors from all_instructors list
-                            all_instructors.pop(self.schedule[ts].instructor.id)  # TODO: TEST
+                            all_instructors.pop(self.schedule[time_slot].instructor.id)  # TODO: TEST
 
                 # random choice of instructor from all_instructors list for new lesson
                 instructor = random.choice(list(all_instructors.values()))
@@ -346,18 +346,18 @@ class Schedule:
 
         # for every lesson in solution count number of participants, instructors' hours and classrooms used
 
-        for d in range(current_solution.shape[1]):
-            for ts in range(current_solution.shape[2]):
+        for day in range(current_solution.shape[1]):
+            for time_slot in range(current_solution.shape[2]):
                 used_instructors = list()
-                for c in range(current_solution.shape[0]):
-                    if current_solution[c, d, ts] is not None:
-                        if current_solution[c, d, ts].lesson_type not in \
-                                current_solution[c, d, ts].instructor.qualifications:
+                for lesson in range(current_solution.shape[0]):
+                    if current_solution[lesson, day, time_slot] is not None:
+                        if current_solution[lesson, day, time_slot].lesson_type not in \
+                                current_solution[lesson, day, time_slot].instructor.qualifications:
                             unmatched_instructors += 1
-                        used_instructors.append(current_solution[c, d, ts].instructor.id)
-                        participants_sum += current_solution[c, d, ts].participants.shape[0]
-                        instructors_hours[current_solution[c, d, ts].instructor.id, d] += 1
-                        class_per_day[c, d] = 1
+                        used_instructors.append(current_solution[lesson, day, time_slot].instructor.id)
+                        participants_sum += current_solution[lesson, day, time_slot].participants.shape[0]
+                        instructors_hours[current_solution[lesson, day, time_slot].instructor.id, day] += 1
+                        class_per_day[lesson, day] = 1
                 repeated_instructors += len(used_instructors) - len(set(used_instructors))
 
         # count cost function
@@ -365,6 +365,7 @@ class Schedule:
                self.hour_pay * instructors_hours.sum() - \
                self.pay_for_presence * (instructors_hours > 0).sum() - \
                self.class_renting_cost * class_per_day.sum()
+        
         if self.use_penalty_method:
             cost -= unmatched_instructors * self.penalty_for_unmatched + \
                     repeated_instructors * self.penalty_for_repeated
@@ -400,7 +401,7 @@ class Schedule:
                     i_max = 1
                 else:
                     i_max = 2
-                for i in range(i_max):
+                for _ in range(i_max):
                     # get list of indices where lesson is scheduled
                     # using != None is necessary, because we are interested in
                     # checking if value in array is None, not if array is None
@@ -426,9 +427,9 @@ class Schedule:
                 most_trainings = 0
                 least_busy = None
                 least_trainings = self.time_slot_num
-                for c in range(self.schedule.shape[0]):
-                    for d in range(self.schedule.shape[1]):
-                        trainings_num = np.count_nonzero(current_solution[c, d, :] != None)
+                for lesson in range(self.schedule.shape[0]):
+                    for day in range(self.schedule.shape[1]):
+                        trainings_num = np.count_nonzero(current_solution[lesson, day, :] != None)
                         if neighborhood_type == 'move_to_most_busy':
                             condition = most_trainings <= trainings_num < self.time_slot_num
                         else:
@@ -436,10 +437,10 @@ class Schedule:
 
                         if condition:
                             most_trainings = trainings_num
-                            most_busy = (c, d)
+                            most_busy = (lesson, day)
                         if least_trainings >= trainings_num >= 1:
                             least_trainings = trainings_num
-                            least_busy = (c, d)
+                            least_busy = (lesson, day)
 
                 c_least, d_least = least_busy
                 id_least = random.choice(np.argwhere(current_solution[c_least, d_least, :] != None))
@@ -728,53 +729,3 @@ class Schedule:
 
         return result
 
-#
-# SM = Schedule(client_file='./client_data/form_answers_2.csv',
-#                 instructor_file='./instructor_data/instructors_info_2.csv',
-#                 max_clients_per_training=5, time_slot_num=6, class_num=2)
-# SM.generate_random_schedule(greedy=False)
-#
-# print("\nINITIAL SCHEDULE")
-# print(SM)
-# print('Initial earnings: ', SM.get_cost())
-# first_cost = SM.get_cost()
-# tic = time.time()
-# best_cost, num_of_iter, all_costs = SM.simulated_annealing(alpha=0.999, initial_temp=1000, n_iter_one_temp=10,
-#                                                            min_temp=0.1,
-#                                                            epsilon=0.01, n_iter_without_improvement=10,
-#                                                            initial_solution=True, neighborhood_type_lst=['move_one',
-#                                                                                                          'change_instructors'])
-# toc = time.time()
-#
-# print("\nAFTER OPTIMIZATION")
-# print(SM)
-# print("Number of iterations: ", num_of_iter)
-#
-# print("Best earnings: ", best_cost)
-# second_cost = best_cost
-# print("Time: ", toc - tic)
-#
-# SM.improve_results()
-# print("\nIMPROVED SCHEDULE")
-# print(SM)
-# print("Best improved earnings: ", SM.get_cost())
-#
-# third_cost = SM.get_cost()
-#
-# print(f'{first_cost} $ --> {second_cost} $ --> {third_cost} $')
-#
-# plt.figure()
-# plt.plot(all_costs)
-# plt.title('Goal function over number of iterations')
-# plt.xlabel('Number of iterations')
-# plt.ylabel('Earnings [$]')
-# plt.show()
-
-
-#  TODO: - dodanie listy kompetencji i mniej losowe przydzielanie prowadzących do zajęć (może jako prawdopodobieństwo)
-#  TODO: - ograniczenia - chwiliowo pomijamy ograniczenie 6) i 7)
-#  TODO: - z 7) można zrobić tak, że po ułożeniu już planu sprawdzamy dla każdego użytkownika ile razy w tygodniu
-#   trenuje i jeśli jego liczba treningów jest większa niż max to przenosimy go do innej grupy. Można założyć na
-#   początku działania algorytmu limit np. 12 (zamiast 10) żeby mieć jakieś pole manewru. Takie podejście może
-#   okazać się lepsze bo nie utrudnia działania algorytmu a takich przypadków nie powinno być dużo
-#  TODO: - dodać dokumentację
